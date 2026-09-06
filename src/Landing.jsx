@@ -350,11 +350,13 @@ function HeroVisual() {
 /* A muted, on-brand ambient loop rather than a literal product demo — the
    mock table above already carries the "this is the app" job. Hidden below
    sm: a 30fps background video is dead weight on a phone connection when
-   the gradient alone already reads fine there.
-   Source: "Blue Bokeh Particle Background Loop" by Chandresh Uike, Pexels
-   License (free for commercial use, no attribution required) -
-   https://www.pexels.com/video/blue-bokeh-particle-background-loop-29109434/ */
-const HERO_VIDEO_URL = 'https://videos.pexels.com/video-files/29109434/12575346_2560_1440_30fps.mp4'
+   the gradient alone already reads fine there. 720p rather than the 4K
+   source: it's stretched, blended and dimmed to 25% opacity behind text, so
+   the extra resolution buys nothing but 5MB.
+   Source: "Illustration of a Galaxy" by Samphan Korwong, Pexels License
+   (free for commercial use, no attribution required) -
+   https://www.pexels.com/video/illustration-of-a-galaxy-6961824/ */
+const HERO_VIDEO_URL = 'https://videos.pexels.com/video-files/6961824/6961824-hd_1280_720_30fps.mp4'
 
 function HeroVideo() {
   return (
