@@ -385,6 +385,11 @@ function Starfield() {
     let stars = []
     let frame = 0
     let raf
+    // The pointer's target position, and a separately-eased position that
+    // chases it. Parallax reacts to where the cursor eases to, not to where
+    // it currently is - drawing straight off the raw coordinate would make
+    // the whole field jerk with every mouse-move event instead of drifting.
+    const pointer = { targetX: 0, targetY: 0, x: 0, y: 0 }
 
     function seed() {
       const { clientWidth: w, clientHeight: h } = canvas
@@ -397,14 +402,26 @@ function Starfield() {
       const count = Math.round((w * h) / 1600)
       stars = Array.from({ length: count }, () => {
         const isAccent = Math.random() < 0.06
+        // One value drives everything about how "close" a star reads: a
+        // deep-space parallax has near stars bigger, brighter, faster and
+        // more responsive to the cursor than the ones behind them - a
+        // uniform field of dots moving in lockstep would read as a texture
+        // sliding, not as depth.
+        const depth = Math.random() ** 2 * 0.85 + 0.15
         return {
           x: Math.random() * w,
           y: Math.random() * h,
-          r: Math.random() * 1.3 + 0.3,
-          base: Math.random() * 0.45 + 0.25,
-          amp: Math.random() * 0.35 + 0.1,
-          speed: Math.random() * 0.03 + 0.01,
+          depth,
+          r: 0.3 + depth * 1.4,
+          base: 0.2 + depth * 0.35,
+          amp: Math.random() * 0.3 + 0.1,
+          twinkleSpeed: Math.random() * 0.03 + 0.01,
           phase: Math.random() * Math.PI * 2,
+          // Gentle, near-imperceptible-per-frame drift, always in the same
+          // direction (as if drifting past a fixed camera) rather than
+          // random per-star jitter, which would read as noise, not motion.
+          vx: -(0.02 + depth * 0.1),
+          vy: 0.01 + depth * 0.045,
           // A handful of stars pick up the faint blue/violet tint real
           // starfield photos show; the rest stay neutral white so the tint
           // doesn't turn into an obvious pattern.
@@ -413,15 +430,38 @@ function Starfield() {
       })
     }
 
+    function onPointerMove(e) {
+      const rect = canvas.getBoundingClientRect()
+      // Only within the hero's own bounds - a cursor over a section further
+      // down the page shouldn't keep tugging at a starfield it's not near.
+      if (e.clientY < rect.top || e.clientY > rect.bottom) return
+      pointer.targetX = (e.clientX - rect.left) / rect.width - 0.5
+      pointer.targetY = (e.clientY - rect.top) / rect.height - 0.5
+    }
+
     function draw() {
       const w = canvas.clientWidth
       const h = canvas.clientHeight
       ctx.clearRect(0, 0, w, h)
+
+      pointer.x += (pointer.targetX - pointer.x) * 0.06
+      pointer.y += (pointer.targetY - pointer.y) * 0.06
+      // Nearer stars swing further with the cursor - 36px is how far the
+      // very closest star moves edge-to-edge, everything behind it scales
+      // down from there.
+      const maxParallax = 36
+
       for (const s of stars) {
-        const twinkle = reducedMotion ? 0 : Math.sin(frame * s.speed + s.phase) * s.amp
+        if (!reducedMotion) {
+          s.x = ((s.x + s.vx) % w + w) % w
+          s.y = ((s.y + s.vy) % h + h) % h
+        }
+        const twinkle = reducedMotion ? 0 : Math.sin(frame * s.twinkleSpeed + s.phase) * s.amp
+        const px = reducedMotion ? 0 : pointer.x * maxParallax * s.depth
+        const py = reducedMotion ? 0 : pointer.y * maxParallax * s.depth
         ctx.beginPath()
         ctx.fillStyle = `rgba(${s.rgb}, ${Math.max(0.15, Math.min(1, s.base + twinkle))})`
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+        ctx.arc(s.x + px, s.y + py, s.r, 0, Math.PI * 2)
         ctx.fill()
       }
       frame += 1
@@ -431,8 +471,10 @@ function Starfield() {
     seed()
     draw()
     window.addEventListener('resize', seed)
+    window.addEventListener('pointermove', onPointerMove)
     return () => {
       window.removeEventListener('resize', seed)
+      window.removeEventListener('pointermove', onPointerMove)
       if (raf) cancelAnimationFrame(raf)
     }
   }, [reducedMotion])
