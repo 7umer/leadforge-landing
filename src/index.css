@@ -134,7 +134,28 @@
 }
 
 @layer utilities {
+  /* ---- Dark-mode repairs --------------------------------------------
+     Everything built on the grey/primary ramps inverts on its own. What
+     follows is the set that cannot, because it names a fixed colour: a
+     `-50` tint is a near-white wash, which on a dark card stops being a
+     subtle background and becomes a glowing patch. Each one becomes a
+     dark tint of the same hue, with its text end lifted to stay legible
+     against it. */
   .dark .bg-white { background-color: rgb(var(--c-surface)); }
   .dark .text-primary-600, .dark .text-primary-500 { color: rgb(160 178 252); }
   .dark .text-primary-800, .dark .text-primary-900 { color: rgb(196 208 253); }
+
+  .dark .bg-emerald-50 { background-color: rgb(6 46 34); }
+  .dark .border-emerald-100 { border-color: rgb(6 78 59); }
+  .dark .text-emerald-600, .dark .text-emerald-700 { color: rgb(110 231 183); }
+  .dark .text-emerald-900 { color: rgb(209 250 229); }
+
+  .dark .bg-amber-50 { background-color: rgb(69 39 6); }
+  .dark .text-amber-700 { color: rgb(252 211 77); }
+
+  /* The badges take their colours through @apply, so they carry no
+     `bg-emerald-50` class for the rules above to catch - they need
+     repairing by their own name. */
+  .dark .badge-high { background-color: rgb(6 46 34); color: rgb(110 231 183); }
+  .dark .badge-medium { background-color: rgb(69 39 6); color: rgb(252 211 77); }
 }

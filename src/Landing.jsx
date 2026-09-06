@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import {
   Zap, Sun, Moon, Menu, X, Search, ShieldCheck, Send, MapPin, Smartphone,
   Mail, Languages, Star, Filter, TrendingUp, Check, ChevronDown, ArrowRight,
-  FileText, MessageCircle, Clock, Gift, Building2,
+  FileText, MessageCircle, Clock, Gift, Building2, KeyRound, Lock, Download,
+  FlaskConical, Github, ListX, Globe2, MessageSquareDashed, Layers,
 } from 'lucide-react'
 import { useTheme } from './useTheme'
 
@@ -55,6 +56,24 @@ function Reveal({ children, delay = 0, className = '' }) {
   )
 }
 
+/* Every section opened with the same shape - centred h2, grey sentence under
+   it - which made nine distinct sections read as one undifferentiated scroll.
+   The eyebrow gives each one an identity at a glance and gives the eye a
+   third size to step down from, so the hierarchy is heading-sized rather
+   than just "big text, small text". */
+function SectionHeading({ eyebrow, title, children, align = 'center' }) {
+  const centered = align === 'center'
+  return (
+    <div className={centered ? 'text-center max-w-2xl mx-auto' : ''}>
+      <p className={`text-xs font-semibold uppercase tracking-[0.14em] text-primary-600 ${centered ? '' : 'text-left'}`}>
+        {eyebrow}
+      </p>
+      <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-gray-900">{title}</h2>
+      {children && <p className="mt-4 text-lg text-gray-500 leading-relaxed">{children}</p>}
+    </div>
+  )
+}
+
 /* Claims a visitor can check for themselves within a minute of signing up.
    Nothing here is social proof: invented user counts are the fastest way to
    lose the trust the page is trying to earn, so every number below traces
@@ -84,18 +103,77 @@ const HOW_IT_WORKS = [
   },
 ]
 
+/* The freelancer's actual day, broken into the three things that waste it.
+   This used to be one paragraph; three named problems are easier to
+   recognise yourself in than a block of prose. */
+const PROBLEMS = [
+  {
+    icon: ListX,
+    title: 'The list is already cold',
+    body: 'A scraped spreadsheet tells you a business exists. It doesn’t tell you whether they need you, or whether forty other freelancers mailed them first.',
+  },
+  {
+    icon: Globe2,
+    title: 'Most of them are already fine',
+    body: 'On a real account, 167 of 255 businesses found already had a decent website. Score on the site alone and you write off two thirds of your list.',
+  },
+  {
+    icon: MessageSquareDashed,
+    title: 'The message says nothing',
+    body: '“I build websites for small businesses” is what everyone opens with, so it’s what everyone ignores. Nothing in it proves you looked.',
+  },
+]
+
+/* Trust, done with facts a visitor can check rather than logos and invented
+   testimonials: what it costs to run, who holds the data, and how to leave. */
+const TRUST = [
+  {
+    icon: KeyRound,
+    title: 'Your Google key, your spend',
+    body: 'Places search runs on your own API key, billed to you at Google’s rates. Every scan reports the requests it used, so the bill is never a surprise.',
+  },
+  {
+    icon: Lock,
+    title: 'Workspace-isolated data',
+    body: 'Leads, credits and outreach history are scoped to your workspace. A team plan is not a shared pool with strangers in it.',
+  },
+  {
+    icon: Download,
+    title: 'No lock-in',
+    body: 'Export every field — contacts, scores, findings, generated messages — to CSV or JSON on any plan, including the free one.',
+  },
+  {
+    icon: FlaskConical,
+    title: 'Tested, not hand-waved',
+    body: '100 tests cover scoring, the website audit, workspace isolation, credit accounting, proposals and rate limiting.',
+  },
+]
+
+/* Real findings from the audit, with the weight each carries into the score -
+   the wide feature card renders these rather than describing them. */
+const AUDIT_FINDINGS = [
+  { label: 'No mobile viewport', weight: 'Critical' },
+  { label: 'No HTTPS', weight: 'Critical' },
+  { label: 'Dead domain / 5xx', weight: 'Critical' },
+  { label: 'Pre-2010 markup, jQuery 1.x', weight: 'Major' },
+  { label: 'Copyright year never moved', weight: 'Minor' },
+  { label: 'Missing title, meta, OG tags', weight: 'Minor' },
+]
+
 const FEATURES = [
   {
     icon: TrendingUp,
     title: 'Scored by need, not by completeness',
-    body: 'A business with no website outscores one with a full contact card. See the breakdown below.',
+    body: 'A business with no website outscores one with a full contact card.',
     wide: true,
+    visual: 'score',
   },
   {
     icon: ShieldCheck,
     title: 'A real website audit',
-    body: 'No HTTPS, no viewport tag, pre-2010 markup, jQuery 1.x, a copyright year that never moved, a page that never loads. Each finding is stored on the lead, weighted, and named in the outreach.',
+    body: 'Every finding is stored on the lead, weighted into the score, and named in the outreach.',
     wide: true,
+    visual: 'audit',
   },
   {
     icon: MapPin,
@@ -126,6 +204,16 @@ const FEATURES = [
     icon: Filter,
     title: 'Filters, bulk actions, export',
     body: 'Score range, rating, category, has-email — then bulk message, bulk status, or export to CSV and JSON.',
+  },
+  {
+    icon: Clock,
+    title: 'Long jobs run in the background',
+    body: 'Auditing or screenshotting hundreds of sites is queued, not blocking. Alerts tell you when a run lands.',
+  },
+  {
+    icon: Layers,
+    title: 'Ten niches, or your own',
+    body: 'Clinic, gym, real estate and seven more, each with its own outreach angle — or define the niche yourself.',
   },
 ]
 
@@ -183,10 +271,18 @@ const FAQS = [
   },
 ]
 
+const NAV_LINKS = [
+  { href: '#how-it-works', label: 'How it works' },
+  { href: '#features', label: 'Features' },
+  { href: '#pricing', label: 'Pricing' },
+  { href: '#faq', label: 'FAQ' },
+]
+
 function Nav() {
   const [theme, toggleTheme] = useTheme()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [active, setActive] = useState('')
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -195,12 +291,29 @@ function Nav() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const links = [
-    { href: '#how-it-works', label: 'How it works' },
-    { href: '#features', label: 'Features' },
-    { href: '#pricing', label: 'Pricing' },
-    { href: '#faq', label: 'FAQ' },
-  ]
+  /* Which anchored section the reader is actually in. The rootMargin pins
+     the decision line near the top of the viewport rather than the middle:
+     a section counts as "current" once its heading is up under the nav,
+     which is where a reader thinks they are - not once it happens to cover
+     half the screen. */
+  useEffect(() => {
+    const sections = NAV_LINKS
+      .map((l) => document.getElementById(l.href.slice(1)))
+      .filter(Boolean)
+    if (!sections.length) return undefined
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActive(`#${entry.target.id}`)
+        })
+      },
+      { rootMargin: '-72px 0px -70% 0px' }
+    )
+    sections.forEach((s) => observer.observe(s))
+    return () => observer.disconnect()
+  }, [])
+
+  const links = NAV_LINKS
 
   return (
     <header
@@ -221,17 +334,32 @@ function Nav() {
         </a>
 
         <nav className="hidden md:flex items-center gap-8" aria-label="Section">
-          {links.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className={`text-sm font-medium transition-colors ${
-                scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/80 hover:text-white'
-              }`}
-            >
-              {l.label}
-            </a>
-          ))}
+          {links.map((l) => {
+            const isActive = active === l.href
+            return (
+              <a
+                key={l.href}
+                href={l.href}
+                aria-current={isActive ? 'true' : undefined}
+                className={`relative py-1 text-sm font-medium transition-colors ${
+                  scrolled
+                    ? isActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                    : isActive ? 'text-white' : 'text-white/80 hover:text-white'
+                }`}
+              >
+                {l.label}
+                {/* An underline rather than a colour change alone: over the
+                    hero the link sits on a starfield, where "slightly
+                    brighter white" is not a difference anyone can see. */}
+                <span
+                  aria-hidden="true"
+                  className={`absolute -bottom-0.5 left-0 h-px w-full origin-left transition-transform duration-200 ${
+                    scrolled ? 'bg-primary-600' : 'bg-white'
+                  } ${isActive ? 'scale-x-100' : 'scale-x-0'}`}
+                />
+              </a>
+            )
+          })}
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
@@ -624,29 +752,47 @@ export default function Landing() {
 
         {/* ---- The problem --------------------------------------------- */}
         <section className="py-24 sm:py-32">
-          <div className="max-w-4xl mx-auto px-5 sm:px-8 text-center">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8">
             <Reveal>
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                Most lead lists go stale before you finish dialling them
-              </h2>
-              <p className="mt-5 text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto">
-                A spreadsheet of businesses doesn’t tell you who actually needs
-                you, and a cold message that says nothing specific gets ignored on
-                sight. On a real account, <strong className="text-gray-700 font-semibold">167 of 255</strong>{' '}
-                businesses found already had a decent website — a website-only score
-                writes all of them off. That’s why LeadForge also scores their
-                Google listing, so the ones with a fine site still have an opening.
+              <SectionHeading eyebrow="The problem" title="Most lead lists go stale before you finish dialling them">
+                Three things waste the morning, and none of them are fixed by
+                finding more businesses.
+              </SectionHeading>
+            </Reveal>
+
+            <div className="mt-14 grid sm:grid-cols-3 gap-6">
+              {PROBLEMS.map(({ icon: Icon, title, body }, i) => (
+                <Reveal key={title} delay={i * 70}>
+                  <div className="h-full">
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-gray-500" aria-hidden="true" />
+                    </div>
+                    <h3 className="mt-4 font-semibold text-gray-900">{title}</h3>
+                    <p className="mt-2 text-sm text-gray-500 leading-relaxed">{body}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
+            {/* The turn: the same fact that makes the middle problem sting is
+                the reason the product scores listings as well as sites. */}
+            <Reveal delay={120}>
+              <p className="mt-14 text-center text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
+                So LeadForge scores the <strong className="text-gray-900 font-semibold">Google listing</strong> too —
+                missing photos, no opening hours, thin reviews — and the ones with a
+                perfectly good website still have an opening worth calling about.
               </p>
             </Reveal>
           </div>
         </section>
 
         {/* ---- How it works ---------------------------------------------- */}
-        <section id="how-it-works" className="py-24 sm:py-32 bg-surface border-y border-gray-200/80">
+        <section id="how-it-works" className="scroll-mt-16 py-24 sm:py-32 bg-surface border-y border-gray-200/80">
           <div className="max-w-6xl mx-auto px-5 sm:px-8">
-            <Reveal className="text-center max-w-2xl mx-auto">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Find. Audit. Pitch.</h2>
-              <p className="mt-4 text-gray-500 text-lg">Three steps, and the third one is already written for you.</p>
+            <Reveal>
+              <SectionHeading eyebrow="How it works" title="Find. Audit. Pitch.">
+                Three steps, and the third one is already written for you.
+              </SectionHeading>
             </Reveal>
 
             <div className="relative mt-16 grid sm:grid-cols-3 gap-10 sm:gap-8">
@@ -669,22 +815,62 @@ export default function Landing() {
         </section>
 
         {/* ---- Feature grid ------------------------------------------- */}
-        <section id="features" className="py-24 sm:py-32">
+        <section id="features" className="scroll-mt-16 py-24 sm:py-32">
           <div className="max-w-6xl mx-auto px-5 sm:px-8">
-            <Reveal className="text-center max-w-2xl mx-auto">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Everything between finding and closing</h2>
-              <p className="mt-4 text-gray-500 text-lg">No step of the pipeline is left as manual busywork.</p>
+            <Reveal>
+              <SectionHeading eyebrow="Features" title="Everything between finding and closing">
+                No step of the pipeline is left as manual busywork.
+              </SectionHeading>
             </Reveal>
 
             <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-5 [grid-auto-flow:dense]">
-              {FEATURES.map(({ icon: Icon, title, body, wide }, i) => (
+              {FEATURES.map(({ icon: Icon, title, body, wide, visual }, i) => (
                 <Reveal key={title} delay={(i % 3) * 70} className={wide ? 'lg:col-span-2' : ''}>
-                  <div className="card card-hover h-full hover:ring-1 hover:ring-primary-500/20">
+                  <div className="card card-hover h-full flex flex-col hover:ring-1 hover:ring-primary-500/20">
                     <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
                       <Icon className="w-5 h-5 text-primary-600" aria-hidden="true" />
                     </div>
                     <h3 className="mt-4 font-semibold text-gray-900">{title}</h3>
                     <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">{body}</p>
+                    {/* The two wide cards are the two features that have real
+                        structure to show - the score's components and the
+                        audit's findings. Describing them in a paragraph while
+                        occupying double the width was the grid promising
+                        weight it didn't deliver. */}
+                    {visual === 'score' && (
+                      <div className="mt-5 space-y-2.5">
+                        {SCORE_COMPONENTS.map((c) => (
+                          <div key={c.label} className="flex items-center gap-3">
+                            <span className="w-16 shrink-0 text-xs font-medium text-gray-600">{c.label}</span>
+                            <span className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                              <span className={`block h-full rounded-full ${c.color}`} style={{ width: c.width }} />
+                            </span>
+                            <span className="w-14 shrink-0 text-right text-[11px] text-gray-400">{c.range}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {visual === 'audit' && (
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        {AUDIT_FINDINGS.map((f) => (
+                          <span
+                            key={f.label}
+                            className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-2 py-1 text-[11px] font-medium text-gray-600"
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                f.weight === 'Critical'
+                                  ? 'bg-red-500'
+                                  : f.weight === 'Major'
+                                    ? 'bg-amber-500'
+                                    : 'bg-gray-400'
+                              }`}
+                            />
+                            {f.label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </Reveal>
               ))}
@@ -696,7 +882,7 @@ export default function Landing() {
         <section className="py-24 sm:py-32 bg-surface border-y border-gray-200/80">
           <div className="max-w-5xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
             <Reveal>
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">The score isn’t a black box</h2>
+              <SectionHeading eyebrow="Scoring" title="The score isn’t a black box" align="left" />
               <p className="mt-5 text-gray-500 leading-relaxed">
                 Every lead is scored 0–100 on how badly it needs a website — not
                 on how complete its contact card is. A business with no site at
@@ -759,7 +945,7 @@ export default function Landing() {
             </Reveal>
 
             <Reveal delay={80} className="order-1 lg:order-2">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">The message names the actual problem</h2>
+              <SectionHeading eyebrow="Outreach" title="The message names the actual problem" align="left" />
               <p className="mt-5 text-gray-500 leading-relaxed">
                 Outreach opens with the specific fault the audit found, not a
                 generic pitch. Sixteen hooks, chosen by the heaviest finding,
@@ -786,12 +972,11 @@ export default function Landing() {
         {/* ---- Proposal --------------------------------------------------- */}
         <section className="py-24 sm:py-32 bg-surface border-y border-gray-200/80">
           <div className="max-w-4xl mx-auto px-5 sm:px-8">
-            <Reveal className="text-center max-w-2xl mx-auto mb-14">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">A priced proposal, not just a lead</h2>
-              <p className="mt-4 text-gray-500 text-lg">
+            <Reveal className="mb-14">
+              <SectionHeading eyebrow="Proposals" title="A priced proposal, not just a lead">
                 One click turns an audit into a shareable, priced pitch —
                 public link, no login required for the person reading it.
-              </p>
+              </SectionHeading>
             </Reveal>
 
             <Reveal delay={100} className="card p-0 overflow-hidden max-w-lg mx-auto">
@@ -821,12 +1006,44 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ---- Pricing ------------------------------------------------ */}
-        <section id="pricing" className="py-24 sm:py-32">
+        {/* ---- Trust ---------------------------------------------------
+            Deliberately facts rather than logos or testimonials: the page
+            has no customers it can name, and inventing some is the fastest
+            way to lose the trust it is trying to earn. What it can say is
+            who pays Google, who holds the data, and how to leave. */}
+        <section className="py-24 sm:py-32">
           <div className="max-w-6xl mx-auto px-5 sm:px-8">
-            <Reveal className="text-center max-w-2xl mx-auto">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Simple pricing, upgrade when you outgrow free</h2>
-              <p className="mt-4 text-gray-500 text-lg">Payment runs through Razorpay or a UPI QR — only the method actually configured on your account is ever shown.</p>
+            <Reveal>
+              <SectionHeading eyebrow="Before you sign up" title="The boring questions, answered up front">
+                What it costs to run, who holds your data, and how you get it
+                back out.
+              </SectionHeading>
+            </Reveal>
+
+            <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {TRUST.map(({ icon: Icon, title, body }, i) => (
+                <Reveal key={title} delay={(i % 4) * 60}>
+                  <div className="card h-full">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+                    </div>
+                    <h3 className="mt-4 font-semibold text-gray-900">{title}</h3>
+                    <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">{body}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Pricing ------------------------------------------------ */}
+        <section id="pricing" className="scroll-mt-16 py-24 sm:py-32 bg-surface border-y border-gray-200/80">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8">
+            <Reveal>
+              <SectionHeading eyebrow="Pricing" title="Simple pricing, upgrade when you outgrow free">
+                Payment runs through Razorpay or a UPI QR — only the method
+                actually configured on your account is ever shown.
+              </SectionHeading>
             </Reveal>
 
             <div className="mt-14 grid md:grid-cols-3 gap-6 items-start">
@@ -875,16 +1092,16 @@ export default function Landing() {
         </section>
 
         {/* ---- FAQ ------------------------------------------------------- */}
-        <section id="faq" className="py-24 sm:py-32 bg-surface border-y border-gray-200/80">
+        <section id="faq" className="scroll-mt-16 py-24 sm:py-32">
           <div className="max-w-3xl mx-auto px-5 sm:px-8">
-            <Reveal className="text-center mb-14">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Questions</h2>
+            <Reveal className="mb-14">
+              <SectionHeading eyebrow="FAQ" title="Questions people ask first" />
             </Reveal>
             <div className="space-y-3">
               {FAQS.map(({ q, a }, i) => (
                 <Reveal key={q} delay={i * 40}>
-                  <details className="group card cursor-pointer [&::-webkit-details-marker]:hidden">
-                    <summary className="flex items-center justify-between font-medium text-gray-900 list-none">
+                  <details className="group card cursor-pointer transition-colors hover:border-gray-300/80 [&::-webkit-details-marker]:hidden">
+                    <summary className="flex items-center justify-between gap-4 font-medium text-gray-900 list-none">
                       {q}
                       <ChevronDown className="w-4 h-4 text-gray-400 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
                     </summary>
@@ -893,6 +1110,15 @@ export default function Landing() {
                 </Reveal>
               ))}
             </div>
+            <Reveal delay={120}>
+              <p className="mt-10 text-center text-sm text-gray-400">
+                Something not covered here?{' '}
+                <a href={REGISTER_URL} className="text-primary-600 font-medium hover:underline">
+                  Start free and find out in ten minutes
+                </a>{' '}
+                — the free plan needs no card.
+              </p>
+            </Reveal>
           </div>
         </section>
 
@@ -914,22 +1140,58 @@ export default function Landing() {
         </section>
       </main>
 
-      <footer className="py-14 border-t border-gray-200/80">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" aria-hidden="true" />
+      <footer className="border-t border-gray-200/80 bg-surface">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="lg:col-span-2 max-w-sm">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-button">
+                  <Zap className="w-4 h-4 text-white" aria-hidden="true" />
+                </div>
+                <span className="text-lg font-bold text-gray-900 tracking-tight">LeadForge</span>
+              </div>
+              <p className="mt-4 text-sm text-gray-500 leading-relaxed">
+                A client-finding tool for freelancers and small web agencies.
+                Finds local businesses whose sites are broken, dated or
+                missing, proves it, and writes the first message.
+              </p>
+              <a
+                href="https://github.com/7umer/leadforge"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="mt-5 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                <Github className="w-4 h-4" aria-hidden="true" />
+                Source on GitHub
+              </a>
             </div>
-            <span className="font-semibold text-gray-900">LeadForge</span>
-            <span className="text-sm text-gray-400 hidden sm:inline">— find clients who actually need you</span>
+
+            <nav aria-label="Product">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Product</h2>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                <li><a href="#how-it-works" className="text-gray-500 hover:text-gray-900 transition-colors">How it works</a></li>
+                <li><a href="#features" className="text-gray-500 hover:text-gray-900 transition-colors">Features</a></li>
+                <li><a href="#pricing" className="text-gray-500 hover:text-gray-900 transition-colors">Pricing</a></li>
+                <li><a href="#faq" className="text-gray-500 hover:text-gray-900 transition-colors">FAQ</a></li>
+              </ul>
+            </nav>
+
+            <nav aria-label="Account">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Get started</h2>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                <li><a href={REGISTER_URL} className="text-gray-500 hover:text-gray-900 transition-colors">Create an account</a></li>
+                <li><a href={LOGIN_URL} className="text-gray-500 hover:text-gray-900 transition-colors">Log in</a></li>
+              </ul>
+              <p className="mt-4 text-xs text-gray-400 leading-relaxed">
+                Free plan: 200 leads, no card.
+              </p>
+            </nav>
           </div>
-          <nav className="flex items-center gap-6 text-sm text-gray-500" aria-label="Footer">
-            <a href="#features" className="hover:text-gray-900">Product</a>
-            <a href="#pricing" className="hover:text-gray-900">Pricing</a>
-            <a href={LOGIN_URL} className="hover:text-gray-900">Log in</a>
-            <a href={REGISTER_URL} className="hover:text-gray-900">Register</a>
-          </nav>
-          <p className="text-xs text-gray-400">&copy; {new Date().getFullYear()} LeadForge</p>
+
+          <div className="mt-12 pt-6 border-t border-gray-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-gray-400">&copy; {new Date().getFullYear()} LeadForge</p>
+            <p className="text-xs text-gray-400">Built for freelancers and small agencies.</p>
+          </div>
         </div>
       </footer>
     </div>

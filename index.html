@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LeadForge — Find clients who actually need you</title>
     <meta name="description" content="LeadForge finds local businesses whose websites are broken, dated or missing entirely, proves what's wrong with a real audit and a mobile screenshot, then writes the first message for you." />
+    <meta name="theme-color" content="#0b1122" />
+
+    <!-- The brand mark as an inline SVG, so the tab icon costs no request and
+         can never 404 the way a missing /favicon.ico silently does. -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%234a5ae8'/><path d='M17.8 4 8.5 18.2h5.4L12.6 28l9.6-14.4h-5.5z' fill='%23fff'/></svg>" />
+
+    <!-- Link previews. No og:image until there's a real 1200x630 asset to
+         point at - a broken image URL renders worse than none, and every
+         platform falls back to title + description cleanly. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LeadForge" />
+    <meta property="og:title" content="LeadForge — Find clients who actually need you" />
+    <meta property="og:description" content="Finds local businesses whose websites are broken, dated or missing entirely, proves what's wrong, and writes the first message for you." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="LeadForge — Find clients who actually need you" />
+    <meta name="twitter:description" content="Finds local businesses whose websites are broken, dated or missing entirely, proves what's wrong, and writes the first message for you." />
+
     <script>
       // Applied before first paint so a dark-mode visitor never sees a
       // flash of the light theme while React boots.
