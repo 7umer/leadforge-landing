@@ -293,10 +293,11 @@ function Nav() {
   )
 }
 
-/* A screenshot-of-the-product mock, not a stock image. Fixed light colours
-   rather than the theme ramp: this card is meant to read as "a picture of
-   the app", which stays the same regardless of what theme the visitor is
-   browsing this marketing page in. */
+/* A mock of the product, not a stock image or screenshot. Glass rather than
+   a solid white card: on a video background a boxy white card would sit on
+   top of the scene instead of in it, so this uses the same translucent,
+   blurred-behind-it treatment as the badges and buttons around it, with
+   light text since the ground beneath it is always dark. */
 const MOCK_LEADS = [
   { name: 'Riverside Dental', city: 'Austin, TX', score: 92, tag: 'high', finding: 'No mobile viewport' },
   { name: 'Copper Kettle Café', city: 'Leeds, UK', score: 74, tag: 'high', finding: 'No HTTPS' },
@@ -307,23 +308,23 @@ function HeroVisual() {
   return (
     <div className="relative mt-14 sm:mt-20 max-w-3xl mx-auto px-2">
       <div
-        className="rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden"
+        className="rounded-2xl bg-white/10 backdrop-blur-xl shadow-2xl ring-1 ring-white/15 overflow-hidden"
         style={{ transform: 'perspective(1400px) rotateX(4deg)' }}
       >
-        <div className="flex items-center gap-1.5 px-4 py-3 bg-slate-50 border-b border-slate-200">
-          <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-          <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-          <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-          <span className="ml-3 text-xs text-slate-400 font-medium">leadforge.app/leads</span>
+        <div className="flex items-center gap-1.5 px-4 py-3 bg-white/5 border-b border-white/10">
+          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
+          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
+          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
+          <span className="ml-3 text-xs text-white/40 font-medium">leadforge.app/leads</span>
         </div>
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-white/10">
           {MOCK_LEADS.map((lead) => (
             <div key={lead.name} className="flex items-center justify-between gap-4 px-5 py-4">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-900 truncate">{lead.name}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{lead.city}</p>
+                <p className="text-sm font-semibold text-white truncate">{lead.name}</p>
+                <p className="text-xs text-white/40 mt-0.5">{lead.city}</p>
               </div>
-              <span className="hidden sm:inline-flex items-center text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md whitespace-nowrap">
+              <span className="hidden sm:inline-flex items-center text-xs font-medium text-white/60 bg-white/10 px-2 py-0.5 rounded-md whitespace-nowrap">
                 {lead.finding}
               </span>
               <span className={`shrink-0 badge-${lead.tag}`}>{lead.score}</span>
@@ -332,17 +333,42 @@ function HeroVisual() {
         </div>
       </div>
 
-      <div className="hidden sm:block absolute -bottom-8 -left-6 w-64 rounded-xl bg-white shadow-2xl ring-1 ring-black/5 p-3.5 rotate-[-3deg]">
+      <div className="hidden sm:block absolute -bottom-8 -left-6 w-64 rounded-xl bg-white/10 backdrop-blur-xl shadow-2xl ring-1 ring-white/15 p-3.5 rotate-[-3deg]">
         <div className="flex items-center gap-1.5 mb-2">
-          <MessageCircle className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
-          <span className="text-[11px] font-semibold text-slate-500">WhatsApp draft</span>
+          <MessageCircle className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+          <span className="text-[11px] font-semibold text-white/60">WhatsApp draft</span>
         </div>
-        <p className="text-[11px] text-slate-600 leading-snug">
+        <p className="text-[11px] text-white/80 leading-snug">
           Hi Riverside Dental — I had a look at your site on my phone and it
           isn’t mobile-friendly. Fixed a few of these for other clinics near you...
         </p>
       </div>
     </div>
+  )
+}
+
+/* A muted, on-brand ambient loop rather than a literal product demo — the
+   mock table above already carries the "this is the app" job. Hidden below
+   sm: a 30fps background video is dead weight on a phone connection when
+   the gradient alone already reads fine there.
+   Source: "Blue Bokeh Particle Background Loop" by Chandresh Uike, Pexels
+   License (free for commercial use, no attribution required) -
+   https://www.pexels.com/video/blue-bokeh-particle-background-loop-29109434/ */
+const HERO_VIDEO_URL = 'https://videos.pexels.com/video-files/29109434/12575346_2560_1440_30fps.mp4'
+
+function HeroVideo() {
+  return (
+    <video
+      aria-hidden="true"
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="none"
+      className="hero-video hidden sm:block absolute inset-0 w-full h-full object-cover opacity-25 mix-blend-screen"
+    >
+      <source src={HERO_VIDEO_URL} type="video/mp4" />
+    </video>
   )
 }
 
@@ -354,6 +380,12 @@ export default function Landing() {
       <main>
         {/* ---- Hero --------------------------------------------------- */}
         <section className="relative overflow-hidden bg-[#080c1a] bg-gradient-to-br from-[#0b1122] via-[#111a35] to-[#0a0f1e] pt-36 pb-24 sm:pt-44 sm:pb-32">
+          <HeroVideo />
+          {/* Sits between the video and the text: without it the video's own
+              blacks read as a slightly different grey than the gradient
+              around it, and the seam between "video" and "no video" (its
+              hard edge, and the sm: breakpoint where it disappears
+              entirely) would show. This keeps the two indistinguishable. */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div className="absolute -top-32 -left-24 w-[30rem] h-[30rem] rounded-full bg-[#4a5ae8]/25 blur-[100px]" />
             <div className="absolute bottom-[-6rem] right-[-4rem] w-[32rem] h-[32rem] rounded-full bg-[#7c3aed]/20 blur-[110px]" />
