@@ -7,12 +7,11 @@ import {
 import { useTheme } from './useTheme'
 
 /* This page is standalone — the actual app lives in a separate repo/deploy,
-   so every CTA needs a real URL rather than a client-side route. Set
-   VITE_APP_URL in .env (see .env.example) to the app's deployed origin;
-   it defaults to a relative path so the build never silently links nowhere,
-   but that default only makes sense if this page is ever served from the
-   same origin as the app. */
-const APP_URL = import.meta.env.VITE_APP_URL || ''
+   so every CTA needs a real URL rather than a client-side route. Defaults to
+   the live app so the site is correct even if a deploy target never sets
+   VITE_APP_URL; set that env var (see .env.example) to override it, e.g. for
+   a staging build that should point somewhere else. */
+const APP_URL = import.meta.env.VITE_APP_URL || 'https://leadforge-9r0v.onrender.com'
 const REGISTER_URL = `${APP_URL}/register`
 const LOGIN_URL = `${APP_URL}/login`
 
