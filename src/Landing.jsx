@@ -349,7 +349,7 @@ function Nav() {
               >
                 {l.label}
                 {/* An underline rather than a colour change alone: over the
-                    hero the link sits on a starfield, where "slightly
+                    hero the link sits on a dark gradient, where "slightly
                     brighter white" is not a difference anyone can see. */}
                 <span
                   aria-hidden="true"
@@ -475,230 +475,6 @@ function HeroVisual() {
   )
 }
 
-/* A canvas starfield instead of stock video: every stock clip tried here was
-   wrong in one of two ways — an "illustration" that read as a cartoon logo,
-   or real footage that isn't actually a loop (a timelapse's last frame is
-   not its first, so looping it jump-cuts). A field of stars has neither
-   problem: it's generated, not played back, so there is no seam to hit and
-   nothing to buffer or stutter — it just keeps twinkling, forever, on a
-   canvas a few KB in code instead of megabytes of downloaded video.
-
-   Regenerated on resize rather than once, so a star's position is always
-   relative to the current box - resizing the window doesn't leave stars
-   clustered in what used to be the corner. */
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const onChange = (e) => setReduced(e.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-  return reduced
-}
-
-function Starfield() {
-  const canvasRef = useRef(null)
-  const reducedMotion = useReducedMotion()
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return undefined
-    const ctx = canvas.getContext('2d')
-    // Capped at 2: a 3x canvas backing store on a 3x-DPR phone buys sharpness
-    // no one asked for at real memory cost, for a layer that's just texture.
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    let stars = []
-    let band = null
-    let frame = 0
-    let raf
-    // The pointer's target position, and a separately-eased position that
-    // chases it. Parallax reacts to where the cursor eases to, not to where
-    // it currently is - drawing straight off the raw coordinate would make
-    // the whole field jerk with every mouse-move event instead of drifting.
-    const pointer = { targetX: 0, targetY: 0, x: 0, y: 0 }
-
-    function seed() {
-      const { clientWidth: w, clientHeight: h } = canvas
-      canvas.width = w * dpr
-      canvas.height = h * dpr
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-
-      // The band geometry a reference Milky Way photo actually has: one
-      // bright diagonal stripe of density, not stars scattered evenly. Every
-      // star below is positioned relative to this line, and the glow/dust
-      // layers in drawBand/drawDustLane share the exact same angle, so the
-      // haze, the dust rift and the star clustering all line up.
-      const angle = (-20 * Math.PI) / 180
-      band = {
-        angle,
-        dir: { x: Math.cos(angle), y: Math.sin(angle) },
-        perp: { x: -Math.sin(angle), y: Math.cos(angle) },
-        cx: w / 2,
-        cy: h / 2,
-        diag: Math.sqrt(w * w + h * h) * 1.3,
-        spread: h * 0.16,
-      }
-
-      function makeStar(inBand) {
-        let x, y
-        if (inBand) {
-          const t = (Math.random() - 0.5) * band.diag
-          // Averaging three uniforms approximates a bell curve without
-          // actually computing one - cheap, and good enough to cluster
-          // stars toward the line instead of spreading them evenly across
-          // the band's width.
-          const p = ((Math.random() + Math.random() + Math.random() - 1.5) / 1.5) * band.spread
-          x = band.cx + band.dir.x * t + band.perp.x * p
-          y = band.cy + band.dir.y * t + band.perp.y * p
-        } else {
-          x = Math.random() * w
-          y = Math.random() * h
-        }
-        // One value drives everything about how "close" a star reads: a
-        // deep-space parallax has near stars bigger, brighter, faster and
-        // more responsive to the cursor than the ones behind them.
-        const depth = Math.random() ** 2 * 0.85 + 0.15
-        const isPink = inBand && Math.random() < 0.1
-        const isBlue = Math.random() < 0.16
-        return {
-          x,
-          y,
-          depth,
-          r: (inBand ? 0.25 : 0.2) + depth * (inBand ? 1.0 : 0.65),
-          base: (inBand ? 0.3 : 0.15) + depth * 0.4,
-          amp: Math.random() * 0.2 + 0.05,
-          twinkleSpeed: Math.random() * 0.025 + 0.008,
-          phase: Math.random() * Math.PI * 2,
-          // Gentle, near-imperceptible-per-frame drift, always in the same
-          // direction (as if drifting past a fixed camera) rather than
-          // random per-star jitter, which would read as noise, not motion.
-          vx: -(0.015 + depth * 0.07),
-          vy: 0.008 + depth * 0.03,
-          rgb: isPink ? '255,205,220' : isBlue ? '196,214,255' : '255,255,255',
-        }
-      }
-
-      // Density tuned by eye against the reference photo: a sparse field
-      // scattered everywhere plus a much denser population clustered into
-      // the band above is what makes it read as one bright stripe across a
-      // mostly-empty sky, rather than stars evenly sprinkled over everything.
-      const fieldCount = Math.round((w * h) / 1300)
-      const bandCount = Math.round((w * h) / 260)
-      stars = [
-        ...Array.from({ length: fieldCount }, () => makeStar(false)),
-        ...Array.from({ length: bandCount }, () => makeStar(true)),
-      ]
-    }
-
-    function onPointerMove(e) {
-      const rect = canvas.getBoundingClientRect()
-      // Only within the hero's own bounds - a cursor over a section further
-      // down the page shouldn't keep tugging at a starfield it's not near.
-      if (e.clientY < rect.top || e.clientY > rect.bottom) return
-      pointer.targetX = (e.clientX - rect.left) / rect.width - 0.5
-      pointer.targetY = (e.clientY - rect.top) / rect.height - 0.5
-    }
-
-    // The soft, additive haze the band's stars sit inside - real starlight
-    // and nebula glow brightening the sky rather than a flat colour on top
-    // of it, hence 'lighter' instead of the default composite mode.
-    function drawGlow(w, h) {
-      ctx.save()
-      ctx.translate(band.cx, band.cy)
-      ctx.rotate(band.angle)
-      ctx.globalCompositeOperation = 'lighter'
-      const length = band.diag
-
-      const haze = ctx.createLinearGradient(0, -h * 0.32, 0, h * 0.32)
-      haze.addColorStop(0, 'rgba(130,150,255,0)')
-      haze.addColorStop(0.38, 'rgba(160,180,255,0.09)')
-      haze.addColorStop(0.5, 'rgba(215,200,255,0.16)')
-      haze.addColorStop(0.62, 'rgba(160,180,255,0.09)')
-      haze.addColorStop(1, 'rgba(130,150,255,0)')
-      ctx.fillStyle = haze
-      ctx.fillRect(-length / 2, -h * 0.32, length, h * 0.64)
-
-      // Two off-centre knots of warmer light - the nebula pockets a real
-      // Milky Way band shows amid the otherwise blue-white haze.
-      ;[-0.16, 0.22].forEach((tFrac, i) => {
-        const knot = ctx.createRadialGradient(tFrac * length, 0, 0, tFrac * length, 0, h * 0.2)
-        knot.addColorStop(0, i === 0 ? 'rgba(255,160,190,0.16)' : 'rgba(255,190,160,0.13)')
-        knot.addColorStop(1, 'rgba(255,160,190,0)')
-        ctx.fillStyle = knot
-        ctx.fillRect(-length / 2, -h * 0.32, length, h * 0.64)
-      })
-      ctx.restore()
-    }
-
-    // The dark rift of interstellar dust that cuts through a real Milky Way
-    // band, off-centre from its brightest line - without it the band reads
-    // as a uniform glow instead of a photographed structure.
-    function drawDustLane(h) {
-      ctx.save()
-      ctx.translate(band.cx, band.cy)
-      ctx.rotate(band.angle)
-      ctx.globalCompositeOperation = 'source-over'
-      const length = band.diag
-      const offset = -h * 0.05
-      const grad = ctx.createLinearGradient(0, offset - h * 0.07, 0, offset + h * 0.07)
-      grad.addColorStop(0, 'rgba(6,7,16,0)')
-      grad.addColorStop(0.5, 'rgba(6,7,16,0.5)')
-      grad.addColorStop(1, 'rgba(6,7,16,0)')
-      ctx.fillStyle = grad
-      ctx.fillRect(-length / 2, offset - h * 0.07, length, h * 0.14)
-      ctx.restore()
-    }
-
-    function draw() {
-      const w = canvas.clientWidth
-      const h = canvas.clientHeight
-      ctx.clearRect(0, 0, w, h)
-      drawGlow(w, h)
-
-      ctx.globalCompositeOperation = 'source-over'
-      pointer.x += (pointer.targetX - pointer.x) * 0.06
-      pointer.y += (pointer.targetY - pointer.y) * 0.06
-      // Nearer stars swing further with the cursor - 36px is how far the
-      // very closest star moves edge-to-edge, everything behind it scales
-      // down from there.
-      const maxParallax = 36
-
-      for (const s of stars) {
-        if (!reducedMotion) {
-          s.x = ((s.x + s.vx) % w + w) % w
-          s.y = ((s.y + s.vy) % h + h) % h
-        }
-        const twinkle = reducedMotion ? 0 : Math.sin(frame * s.twinkleSpeed + s.phase) * s.amp
-        const px = reducedMotion ? 0 : pointer.x * maxParallax * s.depth
-        const py = reducedMotion ? 0 : pointer.y * maxParallax * s.depth
-        ctx.beginPath()
-        ctx.fillStyle = `rgba(${s.rgb}, ${Math.max(0.12, Math.min(1, s.base + twinkle))})`
-        ctx.arc(s.x + px, s.y + py, s.r, 0, Math.PI * 2)
-        ctx.fill()
-      }
-
-      drawDustLane(h)
-      frame += 1
-      if (!reducedMotion) raf = requestAnimationFrame(draw)
-    }
-
-    seed()
-    draw()
-    window.addEventListener('resize', seed)
-    window.addEventListener('pointermove', onPointerMove)
-    return () => {
-      window.removeEventListener('resize', seed)
-      window.removeEventListener('pointermove', onPointerMove)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [reducedMotion])
-
-  return <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 w-full h-full" />
-}
-
 export default function Landing() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -707,16 +483,17 @@ export default function Landing() {
       <main>
         {/* ---- Hero --------------------------------------------------- */}
         <section className="relative overflow-hidden bg-[#080c1a] bg-gradient-to-br from-[#0b1122] via-[#111a35] to-[#0a0f1e] pt-36 pb-24 sm:pt-44 sm:pb-32">
-          <Starfield />
-          {/* The band's own glow (drawn on the canvas, aligned exactly with
-              its star clustering) now carries the colour that used to come
-              from three flat brand-coloured circles — those read as a
-              lit room, not a photograph of the sky, next to an actual
-              Milky Way reference. Kept, but faint: just enough that the
-              hero still reads as the same brand as the rest of the page. */}
+          {/* Two soft light sources, so a large flat area of brand colour has
+              somewhere for the eye to rest, plus a hairline of light along the
+              top edge, the way a lit surface catches its own boundary — the
+              same treatment the app's own sign-in panel uses, so the front
+              door and the product look like one build. These were dimmed
+              almost out while a starfield carried the hero; with that gone
+              they are back at full strength. */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-            <div className="absolute -top-32 -left-24 w-[30rem] h-[30rem] rounded-full bg-[#4a5ae8]/8 blur-[100px]" />
-            <div className="absolute bottom-[-6rem] right-[-4rem] w-[32rem] h-[32rem] rounded-full bg-[#7c3aed]/6 blur-[110px]" />
+            <div className="absolute -top-32 -left-24 w-[30rem] h-[30rem] rounded-full bg-[#4a5ae8]/25 blur-[100px]" />
+            <div className="absolute bottom-[-6rem] right-[-4rem] w-[32rem] h-[32rem] rounded-full bg-[#7c3aed]/20 blur-[110px]" />
+            <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-[#0ea5e9]/10 blur-[90px]" />
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           </div>
 
