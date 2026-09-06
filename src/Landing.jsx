@@ -347,40 +347,97 @@ function HeroVisual() {
   )
 }
 
-/* A muted, on-brand ambient loop rather than a literal product demo — the
-   mock table above already carries the "this is the app" job. Hidden below
-   sm: a background video is dead weight on a phone connection when the
-   gradient alone already reads fine there.
+/* A canvas starfield instead of stock video: every stock clip tried here was
+   wrong in one of two ways — an "illustration" that read as a cartoon logo,
+   or real footage that isn't actually a loop (a timelapse's last frame is
+   not its first, so looping it jump-cuts). A field of stars has neither
+   problem: it's generated, not played back, so there is no seam to hit and
+   nothing to buffer or stutter — it just keeps twinkling, forever, on a
+   canvas a few KB in code instead of megabytes of downloaded video.
 
-   Drifting fog/nebula rather than the spinning-galaxy-illustration this
-   used to be: that one read as a cartoon graphic and, because its last
-   frame didn't match its first, visibly jump-cut on every loop. Slow,
-   textured drift has no such seam - restarting is imperceptible - and it
-   photographs as real space rather than a rendered logo.
-
-   preload="auto" (not "none"): the whole point is a loop with no stutter,
-   which means the next lap has to already be buffered before the current
-   one ends, not fetched on demand when it loops.
-
-   Source: "Nebula, Fog, Space, Cosmos, Universe" by AdisResic, Pixabay
-   Content License (free for commercial use, no attribution required) -
-   https://pixabay.com/videos/nebula-fog-space-cosmos-universe-170591/ */
-const HERO_VIDEO_URL = 'https://cdn.pixabay.com/video/2023/07/08/170591-843561794_small.mp4'
-
-function HeroVideo() {
-  return (
-    <video
-      aria-hidden="true"
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="auto"
-      className="hero-video hidden sm:block absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-screen"
-    >
-      <source src={HERO_VIDEO_URL} type="video/mp4" />
-    </video>
+   Regenerated on resize rather than once, so a star's position is always
+   relative to the current box - resizing the window doesn't leave stars
+   clustered in what used to be the corner. */
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   )
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const onChange = (e) => setReduced(e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  return reduced
+}
+
+function Starfield() {
+  const canvasRef = useRef(null)
+  const reducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return undefined
+    const ctx = canvas.getContext('2d')
+    // Capped at 2: a 3x canvas backing store on a 3x-DPR phone buys sharpness
+    // no one asked for at real memory cost, for a layer that's just texture.
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    let stars = []
+    let frame = 0
+    let raf
+
+    function seed() {
+      const { clientWidth: w, clientHeight: h } = canvas
+      canvas.width = w * dpr
+      canvas.height = h * dpr
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      // Density tuned by eye against the reference photo, not a formula -
+      // sparse enough to read as depth, dense enough to read as the Milky
+      // Way's band rather than a handful of scattered points.
+      const count = Math.round((w * h) / 1600)
+      stars = Array.from({ length: count }, () => {
+        const isAccent = Math.random() < 0.06
+        return {
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.3 + 0.3,
+          base: Math.random() * 0.45 + 0.25,
+          amp: Math.random() * 0.35 + 0.1,
+          speed: Math.random() * 0.03 + 0.01,
+          phase: Math.random() * Math.PI * 2,
+          // A handful of stars pick up the faint blue/violet tint real
+          // starfield photos show; the rest stay neutral white so the tint
+          // doesn't turn into an obvious pattern.
+          rgb: isAccent ? (Math.random() < 0.5 ? '196,181,253' : '147,197,253') : '255,255,255',
+        }
+      })
+    }
+
+    function draw() {
+      const w = canvas.clientWidth
+      const h = canvas.clientHeight
+      ctx.clearRect(0, 0, w, h)
+      for (const s of stars) {
+        const twinkle = reducedMotion ? 0 : Math.sin(frame * s.speed + s.phase) * s.amp
+        ctx.beginPath()
+        ctx.fillStyle = `rgba(${s.rgb}, ${Math.max(0.15, Math.min(1, s.base + twinkle))})`
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+        ctx.fill()
+      }
+      frame += 1
+      if (!reducedMotion) raf = requestAnimationFrame(draw)
+    }
+
+    seed()
+    draw()
+    window.addEventListener('resize', seed)
+    return () => {
+      window.removeEventListener('resize', seed)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [reducedMotion])
+
+  return <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 w-full h-full" />
 }
 
 export default function Landing() {
@@ -391,13 +448,13 @@ export default function Landing() {
       <main>
         {/* ---- Hero --------------------------------------------------- */}
         <section className="relative overflow-hidden bg-[#080c1a] bg-gradient-to-br from-[#0b1122] via-[#111a35] to-[#0a0f1e] pt-36 pb-24 sm:pt-44 sm:pb-32">
-          <HeroVideo />
-          {/* Sits between the video and the text: without it the video's own
-              blacks read as a slightly different grey than the gradient
-              around it, and the seam between "video" and "no video" (its
-              hard edge, and the sm: breakpoint where it disappears
-              entirely) would show. This keeps the two indistinguishable. */}
+          <Starfield />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            {/* A wide, softly blurred, rotated bar standing in for the
+                Milky Way's dust lane — the diagonal band of haze the stars
+                above sit on top of, rather than scattering with nothing
+                to sit in. */}
+            <div className="absolute top-1/2 left-1/2 w-[140%] h-56 sm:h-72 -translate-x-1/2 -translate-y-1/2 -rotate-[18deg] bg-gradient-to-r from-transparent via-[#8098f9]/20 to-transparent blur-[60px]" />
             <div className="absolute -top-32 -left-24 w-[30rem] h-[30rem] rounded-full bg-[#4a5ae8]/25 blur-[100px]" />
             <div className="absolute bottom-[-6rem] right-[-4rem] w-[32rem] h-[32rem] rounded-full bg-[#7c3aed]/20 blur-[110px]" />
             <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-[#0ea5e9]/10 blur-[90px]" />

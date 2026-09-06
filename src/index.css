@@ -57,11 +57,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    /* The hero background video is autoplaying motion, exactly the thing
-       this media query exists to opt out of. Hidden rather than paused so
-       there's no empty video box left behind - the gradient underneath
-       already carries the hero on its own. */
-    .hero-video { display: none !important; }
+    /* The starfield canvas (Landing.jsx) checks this same query itself and
+       freezes its own animation loop - nothing to do for it here. */
     .reveal {
       opacity: 1 !important;
       transform: none !important;
