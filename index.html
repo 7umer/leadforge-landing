@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LeadForge — Find clients who actually need you</title>
+    <meta name="description" content="LeadForge finds local businesses whose websites are broken, dated or missing entirely, proves what's wrong with a real audit and a mobile screenshot, then writes the first message for you." />
+    <script>
+      // Applied before first paint so a dark-mode visitor never sees a
+      // flash of the light theme while React boots.
+      try {
+        const saved = localStorage.getItem('theme')
+        const theme = saved === 'dark' || saved === 'light'
+          ? saved
+          : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+      } catch { /* private mode, or storage blocked */ }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
