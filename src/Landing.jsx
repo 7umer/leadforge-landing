@@ -383,6 +383,7 @@ function Starfield() {
     // no one asked for at real memory cost, for a layer that's just texture.
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     let stars = []
+    let band = null
     let frame = 0
     let raf
     // The pointer's target position, and a separately-eased position that
@@ -396,38 +397,72 @@ function Starfield() {
       canvas.width = w * dpr
       canvas.height = h * dpr
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      // Density tuned by eye against the reference photo, not a formula -
-      // sparse enough to read as depth, dense enough to read as the Milky
-      // Way's band rather than a handful of scattered points.
-      const count = Math.round((w * h) / 1600)
-      stars = Array.from({ length: count }, () => {
-        const isAccent = Math.random() < 0.06
+
+      // The band geometry a reference Milky Way photo actually has: one
+      // bright diagonal stripe of density, not stars scattered evenly. Every
+      // star below is positioned relative to this line, and the glow/dust
+      // layers in drawBand/drawDustLane share the exact same angle, so the
+      // haze, the dust rift and the star clustering all line up.
+      const angle = (-20 * Math.PI) / 180
+      band = {
+        angle,
+        dir: { x: Math.cos(angle), y: Math.sin(angle) },
+        perp: { x: -Math.sin(angle), y: Math.cos(angle) },
+        cx: w / 2,
+        cy: h / 2,
+        diag: Math.sqrt(w * w + h * h) * 1.3,
+        spread: h * 0.16,
+      }
+
+      function makeStar(inBand) {
+        let x, y
+        if (inBand) {
+          const t = (Math.random() - 0.5) * band.diag
+          // Averaging three uniforms approximates a bell curve without
+          // actually computing one - cheap, and good enough to cluster
+          // stars toward the line instead of spreading them evenly across
+          // the band's width.
+          const p = ((Math.random() + Math.random() + Math.random() - 1.5) / 1.5) * band.spread
+          x = band.cx + band.dir.x * t + band.perp.x * p
+          y = band.cy + band.dir.y * t + band.perp.y * p
+        } else {
+          x = Math.random() * w
+          y = Math.random() * h
+        }
         // One value drives everything about how "close" a star reads: a
         // deep-space parallax has near stars bigger, brighter, faster and
-        // more responsive to the cursor than the ones behind them - a
-        // uniform field of dots moving in lockstep would read as a texture
-        // sliding, not as depth.
+        // more responsive to the cursor than the ones behind them.
         const depth = Math.random() ** 2 * 0.85 + 0.15
+        const isPink = inBand && Math.random() < 0.1
+        const isBlue = Math.random() < 0.16
         return {
-          x: Math.random() * w,
-          y: Math.random() * h,
+          x,
+          y,
           depth,
-          r: 0.3 + depth * 1.4,
-          base: 0.2 + depth * 0.35,
-          amp: Math.random() * 0.3 + 0.1,
-          twinkleSpeed: Math.random() * 0.03 + 0.01,
+          r: (inBand ? 0.25 : 0.2) + depth * (inBand ? 1.0 : 0.65),
+          base: (inBand ? 0.3 : 0.15) + depth * 0.4,
+          amp: Math.random() * 0.2 + 0.05,
+          twinkleSpeed: Math.random() * 0.025 + 0.008,
           phase: Math.random() * Math.PI * 2,
           // Gentle, near-imperceptible-per-frame drift, always in the same
           // direction (as if drifting past a fixed camera) rather than
           // random per-star jitter, which would read as noise, not motion.
-          vx: -(0.02 + depth * 0.1),
-          vy: 0.01 + depth * 0.045,
-          // A handful of stars pick up the faint blue/violet tint real
-          // starfield photos show; the rest stay neutral white so the tint
-          // doesn't turn into an obvious pattern.
-          rgb: isAccent ? (Math.random() < 0.5 ? '196,181,253' : '147,197,253') : '255,255,255',
+          vx: -(0.015 + depth * 0.07),
+          vy: 0.008 + depth * 0.03,
+          rgb: isPink ? '255,205,220' : isBlue ? '196,214,255' : '255,255,255',
         }
-      })
+      }
+
+      // Density tuned by eye against the reference photo: a sparse field
+      // scattered everywhere plus a much denser population clustered into
+      // the band above is what makes it read as one bright stripe across a
+      // mostly-empty sky, rather than stars evenly sprinkled over everything.
+      const fieldCount = Math.round((w * h) / 1300)
+      const bandCount = Math.round((w * h) / 260)
+      stars = [
+        ...Array.from({ length: fieldCount }, () => makeStar(false)),
+        ...Array.from({ length: bandCount }, () => makeStar(true)),
+      ]
     }
 
     function onPointerMove(e) {
@@ -439,11 +474,63 @@ function Starfield() {
       pointer.targetY = (e.clientY - rect.top) / rect.height - 0.5
     }
 
+    // The soft, additive haze the band's stars sit inside - real starlight
+    // and nebula glow brightening the sky rather than a flat colour on top
+    // of it, hence 'lighter' instead of the default composite mode.
+    function drawGlow(w, h) {
+      ctx.save()
+      ctx.translate(band.cx, band.cy)
+      ctx.rotate(band.angle)
+      ctx.globalCompositeOperation = 'lighter'
+      const length = band.diag
+
+      const haze = ctx.createLinearGradient(0, -h * 0.32, 0, h * 0.32)
+      haze.addColorStop(0, 'rgba(130,150,255,0)')
+      haze.addColorStop(0.38, 'rgba(160,180,255,0.09)')
+      haze.addColorStop(0.5, 'rgba(215,200,255,0.16)')
+      haze.addColorStop(0.62, 'rgba(160,180,255,0.09)')
+      haze.addColorStop(1, 'rgba(130,150,255,0)')
+      ctx.fillStyle = haze
+      ctx.fillRect(-length / 2, -h * 0.32, length, h * 0.64)
+
+      // Two off-centre knots of warmer light - the nebula pockets a real
+      // Milky Way band shows amid the otherwise blue-white haze.
+      ;[-0.16, 0.22].forEach((tFrac, i) => {
+        const knot = ctx.createRadialGradient(tFrac * length, 0, 0, tFrac * length, 0, h * 0.2)
+        knot.addColorStop(0, i === 0 ? 'rgba(255,160,190,0.16)' : 'rgba(255,190,160,0.13)')
+        knot.addColorStop(1, 'rgba(255,160,190,0)')
+        ctx.fillStyle = knot
+        ctx.fillRect(-length / 2, -h * 0.32, length, h * 0.64)
+      })
+      ctx.restore()
+    }
+
+    // The dark rift of interstellar dust that cuts through a real Milky Way
+    // band, off-centre from its brightest line - without it the band reads
+    // as a uniform glow instead of a photographed structure.
+    function drawDustLane(h) {
+      ctx.save()
+      ctx.translate(band.cx, band.cy)
+      ctx.rotate(band.angle)
+      ctx.globalCompositeOperation = 'source-over'
+      const length = band.diag
+      const offset = -h * 0.05
+      const grad = ctx.createLinearGradient(0, offset - h * 0.07, 0, offset + h * 0.07)
+      grad.addColorStop(0, 'rgba(6,7,16,0)')
+      grad.addColorStop(0.5, 'rgba(6,7,16,0.5)')
+      grad.addColorStop(1, 'rgba(6,7,16,0)')
+      ctx.fillStyle = grad
+      ctx.fillRect(-length / 2, offset - h * 0.07, length, h * 0.14)
+      ctx.restore()
+    }
+
     function draw() {
       const w = canvas.clientWidth
       const h = canvas.clientHeight
       ctx.clearRect(0, 0, w, h)
+      drawGlow(w, h)
 
+      ctx.globalCompositeOperation = 'source-over'
       pointer.x += (pointer.targetX - pointer.x) * 0.06
       pointer.y += (pointer.targetY - pointer.y) * 0.06
       // Nearer stars swing further with the cursor - 36px is how far the
@@ -460,10 +547,12 @@ function Starfield() {
         const px = reducedMotion ? 0 : pointer.x * maxParallax * s.depth
         const py = reducedMotion ? 0 : pointer.y * maxParallax * s.depth
         ctx.beginPath()
-        ctx.fillStyle = `rgba(${s.rgb}, ${Math.max(0.15, Math.min(1, s.base + twinkle))})`
+        ctx.fillStyle = `rgba(${s.rgb}, ${Math.max(0.12, Math.min(1, s.base + twinkle))})`
         ctx.arc(s.x + px, s.y + py, s.r, 0, Math.PI * 2)
         ctx.fill()
       }
+
+      drawDustLane(h)
       frame += 1
       if (!reducedMotion) raf = requestAnimationFrame(draw)
     }
@@ -491,15 +580,15 @@ export default function Landing() {
         {/* ---- Hero --------------------------------------------------- */}
         <section className="relative overflow-hidden bg-[#080c1a] bg-gradient-to-br from-[#0b1122] via-[#111a35] to-[#0a0f1e] pt-36 pb-24 sm:pt-44 sm:pb-32">
           <Starfield />
+          {/* The band's own glow (drawn on the canvas, aligned exactly with
+              its star clustering) now carries the colour that used to come
+              from three flat brand-coloured circles — those read as a
+              lit room, not a photograph of the sky, next to an actual
+              Milky Way reference. Kept, but faint: just enough that the
+              hero still reads as the same brand as the rest of the page. */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-            {/* A wide, softly blurred, rotated bar standing in for the
-                Milky Way's dust lane — the diagonal band of haze the stars
-                above sit on top of, rather than scattering with nothing
-                to sit in. */}
-            <div className="absolute top-1/2 left-1/2 w-[140%] h-56 sm:h-72 -translate-x-1/2 -translate-y-1/2 -rotate-[18deg] bg-gradient-to-r from-transparent via-[#8098f9]/20 to-transparent blur-[60px]" />
-            <div className="absolute -top-32 -left-24 w-[30rem] h-[30rem] rounded-full bg-[#4a5ae8]/25 blur-[100px]" />
-            <div className="absolute bottom-[-6rem] right-[-4rem] w-[32rem] h-[32rem] rounded-full bg-[#7c3aed]/20 blur-[110px]" />
-            <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-[#0ea5e9]/10 blur-[90px]" />
+            <div className="absolute -top-32 -left-24 w-[30rem] h-[30rem] rounded-full bg-[#4a5ae8]/8 blur-[100px]" />
+            <div className="absolute bottom-[-6rem] right-[-4rem] w-[32rem] h-[32rem] rounded-full bg-[#7c3aed]/6 blur-[110px]" />
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           </div>
 
