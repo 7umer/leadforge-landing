@@ -349,14 +349,23 @@ function HeroVisual() {
 
 /* A muted, on-brand ambient loop rather than a literal product demo — the
    mock table above already carries the "this is the app" job. Hidden below
-   sm: a 30fps background video is dead weight on a phone connection when
-   the gradient alone already reads fine there. 720p rather than the 4K
-   source: it's stretched, blended and dimmed to 25% opacity behind text, so
-   the extra resolution buys nothing but 5MB.
-   Source: "Illustration of a Galaxy" by Samphan Korwong, Pexels License
-   (free for commercial use, no attribution required) -
-   https://www.pexels.com/video/illustration-of-a-galaxy-6961824/ */
-const HERO_VIDEO_URL = 'https://videos.pexels.com/video-files/6961824/6961824-hd_1280_720_30fps.mp4'
+   sm: a background video is dead weight on a phone connection when the
+   gradient alone already reads fine there.
+
+   Drifting fog/nebula rather than the spinning-galaxy-illustration this
+   used to be: that one read as a cartoon graphic and, because its last
+   frame didn't match its first, visibly jump-cut on every loop. Slow,
+   textured drift has no such seam - restarting is imperceptible - and it
+   photographs as real space rather than a rendered logo.
+
+   preload="auto" (not "none"): the whole point is a loop with no stutter,
+   which means the next lap has to already be buffered before the current
+   one ends, not fetched on demand when it loops.
+
+   Source: "Nebula, Fog, Space, Cosmos, Universe" by AdisResic, Pixabay
+   Content License (free for commercial use, no attribution required) -
+   https://pixabay.com/videos/nebula-fog-space-cosmos-universe-170591/ */
+const HERO_VIDEO_URL = 'https://cdn.pixabay.com/video/2023/07/08/170591-843561794_small.mp4'
 
 function HeroVideo() {
   return (
@@ -366,8 +375,8 @@ function HeroVideo() {
       muted
       loop
       playsInline
-      preload="none"
-      className="hero-video hidden sm:block absolute inset-0 w-full h-full object-cover opacity-25 mix-blend-screen"
+      preload="auto"
+      className="hero-video hidden sm:block absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-screen"
     >
       <source src={HERO_VIDEO_URL} type="video/mp4" />
     </video>
