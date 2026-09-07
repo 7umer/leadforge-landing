@@ -105,18 +105,44 @@
      glass theme ends up janking on a phone. As an element it is
      promoted to its own compositor layer once and then simply stays
      put. */
+  /* A mesh of overlapping washes rather than three faint ones: glass can
+     only show what is behind it, so a nearly-white backdrop makes an
+     expensive blur look like a plain grey card. Five colours, placed to
+     leave a lighter channel down the middle where the body copy runs, so
+     the page reads as coloured without text ever sitting on the
+     strongest part of a wash. */
   .ambient {
     background-image:
-      radial-gradient(42rem 42rem at 10% 4%, rgb(74 90 232 / 0.16), transparent 62%),
-      radial-gradient(38rem 38rem at 92% 26%, rgb(124 58 237 / 0.13), transparent 62%),
-      radial-gradient(36rem 36rem at 48% 92%, rgb(14 165 233 / 0.11), transparent 62%);
+      radial-gradient(38rem 32rem at 8% 2%, rgb(74 90 232 / 0.30), transparent 60%),
+      radial-gradient(34rem 30rem at 96% 14%, rgb(124 58 237 / 0.26), transparent 60%),
+      radial-gradient(32rem 28rem at 82% 62%, rgb(236 72 153 / 0.16), transparent 60%),
+      radial-gradient(36rem 30rem at 4% 58%, rgb(14 165 233 / 0.22), transparent 60%),
+      radial-gradient(40rem 34rem at 50% 104%, rgb(99 102 241 / 0.24), transparent 60%);
   }
 
   .dark .ambient {
     background-image:
-      radial-gradient(42rem 42rem at 10% 4%, rgb(99 116 255 / 0.2), transparent 62%),
-      radial-gradient(38rem 38rem at 92% 26%, rgb(139 92 246 / 0.16), transparent 62%),
-      radial-gradient(36rem 36rem at 48% 92%, rgb(14 165 233 / 0.12), transparent 62%);
+      radial-gradient(38rem 32rem at 8% 2%, rgb(99 116 255 / 0.30), transparent 60%),
+      radial-gradient(34rem 30rem at 96% 14%, rgb(139 92 246 / 0.26), transparent 60%),
+      radial-gradient(32rem 28rem at 82% 62%, rgb(236 72 153 / 0.16), transparent 60%),
+      radial-gradient(36rem 30rem at 4% 58%, rgb(14 165 233 / 0.20), transparent 60%),
+      radial-gradient(40rem 34rem at 50% 104%, rgb(99 102 241 / 0.24), transparent 60%);
+  }
+
+  /* Grain. Real frosted glass scatters light rather than transmitting it
+     perfectly, and a perfectly smooth gradient underneath is the thing
+     that gives a CSS glass theme away as flat colour. Kept low enough to
+     be felt rather than seen, and generated rather than downloaded. */
+  .ambient::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .dark .ambient::after {
+    opacity: 0.05;
   }
 
   h1, h2, h3 {
