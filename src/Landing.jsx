@@ -319,7 +319,7 @@ function Nav() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-200 ${
         scrolled
-          ? 'bg-surface/80 backdrop-blur-md border-b border-gray-200/80'
+          ? 'bg-surface/60 backdrop-blur-xl border-b border-white/40 dark:border-white/10 shadow-sm'
           : 'bg-transparent border-b border-transparent'
       }`}
     >
@@ -394,7 +394,7 @@ function Nav() {
       </div>
 
       {menuOpen && (
-        <div className="md:hidden bg-surface border-t border-gray-200 px-5 py-4 space-y-3">
+        <div className="md:hidden bg-surface/80 backdrop-blur-xl border-t border-white/40 dark:border-white/10 px-5 py-4 space-y-3">
           {links.map((l) => (
             <a
               key={l.href}
@@ -477,7 +477,10 @@ function HeroVisual() {
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    /* No background colour here - body supplies it, so the ambient layer
+       below can sit behind the content without being painted over. */
+    <div className="min-h-screen">
+      <div aria-hidden="true" className="ambient pointer-events-none fixed inset-0 -z-10" />
       <Nav />
 
       <main>
@@ -564,7 +567,7 @@ export default function Landing() {
         </section>
 
         {/* ---- How it works ---------------------------------------------- */}
-        <section id="how-it-works" className="scroll-mt-16 py-24 sm:py-32 bg-surface border-y border-gray-200/80">
+        <section id="how-it-works" className="scroll-mt-16 py-24 sm:py-32 bg-surface/40 backdrop-blur-sm border-y border-white/40 dark:border-white/10">
           <div className="max-w-6xl mx-auto px-5 sm:px-8">
             <Reveal>
               <SectionHeading eyebrow="How it works" title="Find. Audit. Pitch.">
@@ -656,7 +659,7 @@ export default function Landing() {
         </section>
 
         {/* ---- The score, explained ------------------------------------ */}
-        <section className="py-24 sm:py-32 bg-surface border-y border-gray-200/80">
+        <section className="py-24 sm:py-32 bg-surface/40 backdrop-blur-sm border-y border-white/40 dark:border-white/10">
           <div className="max-w-5xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
             <Reveal>
               <SectionHeading eyebrow="Scoring" title="The score isn’t a black box" align="left" />
@@ -747,7 +750,7 @@ export default function Landing() {
         </section>
 
         {/* ---- Proposal --------------------------------------------------- */}
-        <section className="py-24 sm:py-32 bg-surface border-y border-gray-200/80">
+        <section className="py-24 sm:py-32 bg-surface/40 backdrop-blur-sm border-y border-white/40 dark:border-white/10">
           <div className="max-w-4xl mx-auto px-5 sm:px-8">
             <Reveal className="mb-14">
               <SectionHeading eyebrow="Proposals" title="A priced proposal, not just a lead">
@@ -814,7 +817,7 @@ export default function Landing() {
         </section>
 
         {/* ---- Pricing ------------------------------------------------ */}
-        <section id="pricing" className="scroll-mt-16 py-24 sm:py-32 bg-surface border-y border-gray-200/80">
+        <section id="pricing" className="scroll-mt-16 py-24 sm:py-32 bg-surface/40 backdrop-blur-sm border-y border-white/40 dark:border-white/10">
           <div className="max-w-6xl mx-auto px-5 sm:px-8">
             <Reveal>
               <SectionHeading eyebrow="Pricing" title="Simple pricing, upgrade when you outgrow free">
@@ -917,7 +920,7 @@ export default function Landing() {
         </section>
       </main>
 
-      <footer className="border-t border-gray-200/80 bg-surface">
+      <footer className="border-t border-white/40 dark:border-white/10 bg-surface/40 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-2 max-w-sm">

@@ -64,9 +64,59 @@
     }
   }
 
+  /* ---- Glass ---------------------------------------------------------
+     Frosted glass is only frosted if there is something behind it to
+     blur. On a flat grey page `backdrop-filter` renders an expensive
+     no-op, so the page itself carries three fixed colour washes; every
+     translucent surface above them is what turns those washes into the
+     depth the theme is after.
+
+     The tint is a variable rather than a fixed rgba because glass in a
+     light theme is white held back to ~60%, and in a dark one it is a
+     lifted slate - inverting the alpha alone would make dark cards
+     glow. */
+  :root {
+    --glass-tint: 255 255 255;
+    --glass-alpha: 0.62;
+    --glass-edge: 255 255 255;
+    --glass-edge-alpha: 0.7;
+    --glass-ring: 15 23 42;
+    --glass-ring-alpha: 0.06;
+  }
+
+  .dark {
+    --glass-tint: 33 45 71;
+    --glass-alpha: 0.55;
+    --glass-edge: 255 255 255;
+    --glass-edge-alpha: 0.1;
+    --glass-ring: 0 0 0;
+    --glass-ring-alpha: 0.3;
+  }
+
   body {
     @apply bg-gray-50 text-gray-900 font-sans;
     transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* The washes live on their own fixed layer rather than as a
+     `background-attachment: fixed` on the body. Same look, but a fixed
+     background attachment re-rasterises the gradient on every scroll
+     frame, and doing that under two dozen backdrop-filters is how a
+     glass theme ends up janking on a phone. As an element it is
+     promoted to its own compositor layer once and then simply stays
+     put. */
+  .ambient {
+    background-image:
+      radial-gradient(42rem 42rem at 10% 4%, rgb(74 90 232 / 0.16), transparent 62%),
+      radial-gradient(38rem 38rem at 92% 26%, rgb(124 58 237 / 0.13), transparent 62%),
+      radial-gradient(36rem 36rem at 48% 92%, rgb(14 165 233 / 0.11), transparent 62%);
+  }
+
+  .dark .ambient {
+    background-image:
+      radial-gradient(42rem 42rem at 10% 4%, rgb(99 116 255 / 0.2), transparent 62%),
+      radial-gradient(38rem 38rem at 92% 26%, rgb(139 92 246 / 0.16), transparent 62%),
+      radial-gradient(36rem 36rem at 48% 92%, rgb(14 165 233 / 0.12), transparent 62%);
   }
 
   h1, h2, h3 {
@@ -99,20 +149,55 @@
   .dark .btn-primary { color: #fff; }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 bg-surface text-gray-700
-           px-4 py-2 rounded-lg font-medium border border-gray-200 shadow-button
-           hover:bg-gray-100 hover:border-gray-300 hover:text-gray-900
+    @apply inline-flex items-center justify-center gap-2 text-gray-700
+           px-4 py-2 rounded-lg font-medium shadow-button
+           hover:text-gray-900
            active:scale-[0.98]
            disabled:opacity-50 disabled:pointer-events-none
            transition-all duration-150;
+    background-color: rgb(var(--glass-tint) / var(--glass-alpha));
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgb(var(--glass-edge) / var(--glass-edge-alpha));
+  }
+
+  .btn-secondary:hover {
+    background-color: rgb(var(--glass-tint) / calc(var(--glass-alpha) + 0.18));
+  }
+
+  /* One definition, so every card, panel and accordion on the page turns
+     to glass together rather than a few of them looking like leftovers.
+     The two borders do different jobs: the light top edge is the
+     highlight a real pane catches, the dark ring is the shadow it casts
+     into its own edge - without both it reads as flat translucency. */
+  .glass, .card {
+    background-color: rgb(var(--glass-tint) / var(--glass-alpha));
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgb(var(--glass-edge) / var(--glass-edge-alpha));
+    box-shadow:
+      0 1px 0 0 rgb(255 255 255 / 0.25) inset,
+      0 8px 24px -12px rgb(var(--glass-ring) / var(--glass-ring-alpha)),
+      0 2px 6px -2px rgb(var(--glass-ring) / var(--glass-ring-alpha));
   }
 
   .card {
-    @apply bg-surface rounded-xl border border-gray-200/80 shadow-card p-6;
+    @apply rounded-xl p-6;
   }
 
+  /* Glass has no solid surface to darken on hover, so it lifts by getting
+     less transparent - more pane, less window - rather than by changing
+     colour. */
   .card-hover {
-    @apply hover:shadow-card-hover hover:border-gray-300/80 transition-all duration-200;
+    @apply transition-all duration-200;
+  }
+
+  .card-hover:hover {
+    background-color: rgb(var(--glass-tint) / calc(var(--glass-alpha) + 0.16));
+    border-color: rgb(var(--glass-edge) / calc(var(--glass-edge-alpha) + 0.15));
+    box-shadow:
+      0 1px 0 0 rgb(255 255 255 / 0.35) inset,
+      0 14px 32px -14px rgb(var(--glass-ring) / calc(var(--glass-ring-alpha) + 0.05));
   }
 
   .badge-high {
