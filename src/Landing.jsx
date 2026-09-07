@@ -3,7 +3,7 @@ import {
   Zap, Sun, Moon, Menu, X, Search, ShieldCheck, Send, MapPin, Smartphone,
   Mail, Languages, Star, Filter, TrendingUp, Check, ChevronDown, ArrowRight,
   FileText, MessageCircle, Clock, Gift, Building2, KeyRound, Lock, Download,
-  FlaskConical, Github, ListX, Globe2, MessageSquareDashed, Layers, Phone,
+  FlaskConical, Github, ListX, Globe2, MessageSquareDashed, Layers,
 } from 'lucide-react'
 import { useTheme } from './useTheme'
 
@@ -421,53 +421,6 @@ function Nav() {
   )
 }
 
-/* A mock of the product, not a stock image or screenshot. Glass rather than
-   a solid white card: on a video background a boxy white card would sit on
-   top of the scene instead of in it, so this uses the same translucent,
-   blurred-behind-it treatment as the badges and buttons around it, with
-   light text since the ground beneath it is always dark. */
-/* The hero panel is a working demo, not a picture of one, so each lead
-   carries the message the product would actually generate from its own
-   heaviest finding - selecting a row is what shows the reader the
-   finding-to-outreach step rather than a caption asserting it. */
-const MOCK_LEADS = [
-  {
-    name: 'Riverside Family Dental', city: 'Austin, TX', initials: 'RD', score: 92, tag: 'high',
-    finding: 'No mobile viewport', severity: 'bg-red-400', phone: true, email: true,
-    tint: 'bg-rose-400/15 text-rose-200',
-    message: 'Hi Riverside Family Dental — I had a look at your site on my phone and it isn’t mobile-friendly. I fix exactly this for clinics — want to see it fixed?',
-  },
-  {
-    name: 'Copper Kettle Café', city: 'Leeds, UK', initials: 'CK', score: 74, tag: 'high',
-    finding: 'No HTTPS', severity: 'bg-red-400', phone: true, email: false,
-    tint: 'bg-amber-400/15 text-amber-200',
-    message: 'Hi Copper Kettle Café — your site is still on http, so Chrome shows visitors a “Not secure” warning before they see the menu. That’s a quick fix.',
-  },
-  {
-    name: 'Alvarez Auto Repair', city: 'Fresno, CA', initials: 'AA', score: 51, tag: 'medium',
-    finding: 'Site is 12 years old', severity: 'bg-amber-400', phone: true, email: true,
-    tint: 'bg-sky-400/15 text-sky-200',
-    message: 'Hi Alvarez Auto Repair — your site was built around 2013 and still runs jQuery 1.x. I rebuild shop sites like yours without the downtime.',
-  },
-  {
-    name: 'Northside Physio', city: 'Dublin, IE', initials: 'NP', score: 38, tag: 'low',
-    finding: 'Listing has no photos', severity: 'bg-white/40', phone: false, email: true,
-    tint: 'bg-emerald-400/15 text-emerald-200',
-    message: 'Hi Northside Physio — your website is fine, but your Google listing has no photos, which is where most people decide. Happy to sort that.',
-  },
-]
-
-const HERO_FILTERS = [
-  { id: 'high', label: 'Score 70+', test: (l) => l.score >= 70 },
-  { id: 'phone', label: 'Has phone', test: (l) => l.phone },
-]
-
-/* Columns as one grid template shared by the header row and every data row,
-   so they line up down the panel. Rows laid out independently with
-   `justify-between` was the single biggest tell that this was a drawing of
-   an app rather than a screenshot of one - real tables have columns. */
-const HERO_COLS = 'grid-cols-[minmax(0,1fr)_9.5rem_2.75rem] sm:grid-cols-[minmax(0,1fr)_11rem_3rem]'
-
 /* The proposal card asserted "every price is editable" underneath a fixed
    $650. Letting the reader switch line items on and off and watch the total
    move demonstrates the same sentence instead of claiming it - and the
@@ -694,40 +647,24 @@ function ScoreCalculator() {
   )
 }
 
-/* A working panel rather than a picture of one: the filters filter, the
-   score column sorts, and picking a lead writes that lead's outreach into
-   the draft below. The point of the product is that a finding becomes a
-   message, and letting someone click a row and watch that happen argues it
-   better than a caption claiming it does.
 
-   No perspective tilt any more either - a rotated pane says "screenshot,
-   for looking at". Sitting square says "this one works". */
+/* Actual screenshots of the running app, not a reconstruction of one. Both
+   were taken from a real account and then had their sensitive regions
+   destroyed in the file itself - the phone-number column and the account
+   email are pixelated in the PNG, not merely covered with a CSS blur, since
+   a blur on the page leaves the original one right-click away.
+
+   Width and height are set on both so the browser reserves the space before
+   the image arrives and the hero doesn't jump as it loads. */
 function HeroVisual() {
-  const [active, setActive] = useState([])
-  const [sortDesc, setSortDesc] = useState(true)
-  const [selected, setSelected] = useState(MOCK_LEADS[0].name)
-
-  const toggleFilter = (id) =>
-    setActive((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]))
-
-  const rows = MOCK_LEADS
-    .filter((lead) => HERO_FILTERS.every((f) => !active.includes(f.id) || f.test(lead)))
-    .sort((a, b) => (sortDesc ? b.score - a.score : a.score - b.score))
-
-  // The selection has to survive being filtered out of view, or the draft
-  // below would keep quoting a lead the table no longer shows.
-  const shown = rows.find((l) => l.name === selected) || rows[0]
-
   return (
-    <div className="relative mt-16 sm:mt-24 max-w-4xl mx-auto px-4 sm:px-2">
-      {/* Light pooling under the panel, so it sits on the page instead of
-          being pasted onto it. */}
+    <div className="relative mt-16 sm:mt-24 max-w-5xl mx-auto px-4 sm:px-2">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -inset-x-10 -bottom-10 top-10 rounded-[3rem] bg-[#4a5ae8]/20 blur-[70px]"
       />
 
-      <div className="relative rounded-2xl bg-white/[0.07] backdrop-blur-2xl shadow-2xl ring-1 ring-white/15 overflow-hidden">
+      <figure className="relative rounded-2xl bg-white/[0.07] backdrop-blur-2xl shadow-2xl ring-1 ring-white/15 overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.05] border-b border-white/10">
           <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
           <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
@@ -737,123 +674,28 @@ function HeroVisual() {
             <span className="text-[11px] text-white/45">leadforge.app/leads</span>
           </span>
         </div>
+        <img
+          src="/screenshots/leads.png"
+          width="1917"
+          height="970"
+          alt="The LeadForge leads table: businesses with a quality tag, a score out of 100 and an outreach status, above filters for quality, niche, outreach status and site condition."
+          className="block w-full"
+        />
+      </figure>
 
-        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/10">
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-white/[0.07] px-2.5 py-1 ring-1 ring-white/10 min-w-0">
-            <Search className="w-3 h-3 text-white/35 shrink-0" aria-hidden="true" />
-            <span className="text-[11px] text-white/55 truncate">dentists in Austin, TX</span>
-          </span>
-          {HERO_FILTERS.map((f) => {
-            const on = active.includes(f.id)
-            return (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => toggleFilter(f.id)}
-                aria-pressed={on}
-                className={`hidden sm:inline-flex items-center rounded-md px-2 py-1 text-[11px] font-medium ring-1 transition-colors ${
-                  on
-                    ? 'bg-primary-500/25 text-[#c7d7fe] ring-primary-400/40'
-                    : 'bg-white/[0.07] text-white/50 ring-white/10 hover:bg-white/[0.12] hover:text-white/80'
-                }`}
-              >
-                {f.label}
-              </button>
-            )
-          })}
-          <span className="ml-auto shrink-0 text-[11px] text-white/35 tabular-nums">
-            {rows.length} lead{rows.length === 1 ? '' : 's'}
-          </span>
-        </div>
-
-        <div className={`grid ${HERO_COLS} gap-3 sm:gap-4 px-4 sm:px-5 py-2 border-b border-white/10`}>
-          <span className="text-[10px] font-medium uppercase tracking-wider text-white/30">Business</span>
-          <span className="text-[10px] font-medium uppercase tracking-wider text-white/30">Top finding</span>
-          <button
-            type="button"
-            onClick={() => setSortDesc((v) => !v)}
-            className="flex items-center justify-end gap-0.5 text-[10px] font-medium uppercase tracking-wider text-white/30 hover:text-white/70 transition-colors"
-            aria-label={`Sort by score, currently ${sortDesc ? 'highest' : 'lowest'} first`}
-          >
-            Score
-            <ChevronDown
-              className={`w-3 h-3 transition-transform ${sortDesc ? '' : 'rotate-180'}`}
-              aria-hidden="true"
-            />
-          </button>
-        </div>
-
-        <div className="divide-y divide-white/[0.07]">
-          {rows.map((lead) => {
-            const isOn = shown && shown.name === lead.name
-            return (
-              <button
-                key={lead.name}
-                type="button"
-                onClick={() => setSelected(lead.name)}
-                aria-pressed={isOn}
-                className={`w-full text-left grid ${HERO_COLS} gap-3 sm:gap-4 items-center px-4 sm:px-5 py-3 transition-colors ${
-                  isOn ? 'bg-white/[0.10]' : 'hover:bg-white/[0.05]'
-                }`}
-              >
-                <span className="flex items-center gap-3 min-w-0">
-                  <span
-                    className={`hidden sm:flex w-7 h-7 shrink-0 rounded-md items-center justify-center text-[10px] font-semibold ring-1 ring-white/10 ${lead.tint}`}
-                  >
-                    {lead.initials}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[13px] font-medium text-white truncate">{lead.name}</span>
-                    <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-white/35">
-                      <span className="truncate">{lead.city}</span>
-                      {/* Reachability is what the score's Reach component is
-                          about, so the row shows it the way the app does. */}
-                      {lead.phone && <Phone className="w-2.5 h-2.5 shrink-0" aria-hidden="true" />}
-                      {lead.email && <Mail className="w-2.5 h-2.5 shrink-0" aria-hidden="true" />}
-                    </span>
-                  </span>
-                </span>
-                <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-white/[0.07] px-2 py-0.5 ring-1 ring-white/10 min-w-0">
-                  <span className={`w-1.5 h-1.5 shrink-0 rounded-full ${lead.severity}`} />
-                  <span className="text-[11px] text-white/55 truncate">{lead.finding}</span>
-                </span>
-                <span className={`justify-self-end tabular-nums badge-${lead.tag}`}>{lead.score}</span>
-              </button>
-            )
-          })}
-
-          {rows.length === 0 && (
-            <p className="px-5 py-8 text-center text-[12px] text-white/40">
-              No leads match those filters.
-            </p>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between px-4 sm:px-5 py-2 border-t border-white/10">
-          <span className="text-[11px] text-white/30 tabular-nums">
-            Showing {rows.length} of {MOCK_LEADS.length}
-          </span>
-          <span className="text-[11px] text-white/25 hidden sm:inline">Pick a lead to see its outreach</span>
-        </div>
-      </div>
-
-      {/* Static below lg, where it becomes the second half of the demo, and
-          a floating second window above it - one element either way rather
-          than two copies of the same card in the DOM. */}
-      <div className="mt-5 lg:mt-0 lg:absolute lg:-bottom-16 lg:-left-10 w-full lg:w-64 rounded-xl bg-white/[0.09] backdrop-blur-2xl shadow-2xl ring-1 ring-white/15 p-3.5 lg:-rotate-2">
-        <div className="flex items-center gap-1.5 mb-2">
-          <MessageCircle className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-          <span className="text-[11px] font-semibold text-white/60">WhatsApp draft</span>
-          <span className="ml-auto text-[10px] text-white/30 truncate max-w-[9rem]">
-            {shown ? shown.name : '—'}
-          </span>
-        </div>
-        {/* aria-live, so choosing a row announces the new draft rather than
-            silently swapping text under a screen reader. */}
-        <p aria-live="polite" className="text-[11px] text-white/80 leading-snug">
-          {shown ? shown.message : 'Select a lead to draft its opening message.'}
-        </p>
-      </div>
+      {/* The dashboard as a second window overlapping the corner - the same
+          layered treatment the draft card had, now carrying a real screen
+          rather than a drawn one. Hidden below lg, where it would cover the
+          table it is meant to sit beside. */}
+      <figure className="hidden lg:block absolute -bottom-14 -left-12 w-72 rounded-xl bg-white/[0.09] backdrop-blur-2xl shadow-2xl ring-1 ring-white/15 overflow-hidden -rotate-2">
+        <img
+          src="/screenshots/dashboard.png"
+          width="1917"
+          height="970"
+          alt="The LeadForge dashboard: total leads, usable leads, a lead-quality breakdown and the outreach pipeline."
+          className="block w-full"
+        />
+      </figure>
     </div>
   )
 }
