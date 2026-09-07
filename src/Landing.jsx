@@ -1157,7 +1157,7 @@ export default function Landing() {
             <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {TRUST.map(({ icon: Icon, title, body }, i) => (
                 <Reveal key={title} delay={(i % 4) * 60}>
-                  <div className="card h-full">
+                  <div className="card card-hover h-full">
                     <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
                       <Icon className="w-5 h-5 text-emerald-600" aria-hidden="true" />
                     </div>
@@ -1183,7 +1183,7 @@ export default function Landing() {
             <div className="mt-14 grid md:grid-cols-3 gap-6 items-start">
               {PLANS.map(({ id, name, price, icon: Icon, popular, description, features, cta }, i) => (
                 <Reveal key={id} delay={i * 80}>
-                  <div className={`relative card h-full flex flex-col ${popular ? 'ring-2 ring-primary-500 shadow-lift' : ''}`}>
+                  <div className={`relative card card-hover h-full flex flex-col ${popular ? "ring-2 ring-primary-500 shadow-lift" : ""}`}>
                     {popular && (
                       <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-button">
                         Most popular
@@ -1234,7 +1234,7 @@ export default function Landing() {
             <div className="space-y-3">
               {FAQS.map(({ q, a }, i) => (
                 <Reveal key={q} delay={i * 40}>
-                  <details className="group card cursor-pointer transition-colors hover:border-gray-300/80 [&::-webkit-details-marker]:hidden">
+                  <details className="group card card-hover cursor-pointer [&::-webkit-details-marker]:hidden">
                     <summary className="flex items-center justify-between gap-4 font-medium text-gray-900 list-none">
                       {q}
                       <ChevronDown className="w-4 h-4 text-gray-400 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
