@@ -3,7 +3,7 @@ import {
   Zap, Sun, Moon, Menu, X, Search, ShieldCheck, Send, MapPin, Smartphone,
   Mail, Languages, Star, Filter, TrendingUp, Check, ChevronDown, ArrowRight,
   FileText, MessageCircle, Clock, Gift, Building2, KeyRound, Lock, Download,
-  FlaskConical, Github, ListX, Globe2, MessageSquareDashed, Layers,
+  FlaskConical, Github, ListX, Globe2, MessageSquareDashed, Layers, Phone,
 } from 'lucide-react'
 import { useTheme } from './useTheme'
 
@@ -426,49 +426,432 @@ function Nav() {
    top of the scene instead of in it, so this uses the same translucent,
    blurred-behind-it treatment as the badges and buttons around it, with
    light text since the ground beneath it is always dark. */
+/* The hero panel is a working demo, not a picture of one, so each lead
+   carries the message the product would actually generate from its own
+   heaviest finding - selecting a row is what shows the reader the
+   finding-to-outreach step rather than a caption asserting it. */
 const MOCK_LEADS = [
-  { name: 'Riverside Dental', city: 'Austin, TX', score: 92, tag: 'high', finding: 'No mobile viewport' },
-  { name: 'Copper Kettle Café', city: 'Leeds, UK', score: 74, tag: 'high', finding: 'No HTTPS' },
-  { name: 'Alvarez Auto Repair', city: 'Fresno, CA', score: 51, tag: 'medium', finding: 'Site is 12 years old' },
+  {
+    name: 'Riverside Family Dental', city: 'Austin, TX', initials: 'RD', score: 92, tag: 'high',
+    finding: 'No mobile viewport', severity: 'bg-red-400', phone: true, email: true,
+    tint: 'bg-rose-400/15 text-rose-200',
+    message: 'Hi Riverside Family Dental — I had a look at your site on my phone and it isn’t mobile-friendly. I fix exactly this for clinics — want to see it fixed?',
+  },
+  {
+    name: 'Copper Kettle Café', city: 'Leeds, UK', initials: 'CK', score: 74, tag: 'high',
+    finding: 'No HTTPS', severity: 'bg-red-400', phone: true, email: false,
+    tint: 'bg-amber-400/15 text-amber-200',
+    message: 'Hi Copper Kettle Café — your site is still on http, so Chrome shows visitors a “Not secure” warning before they see the menu. That’s a quick fix.',
+  },
+  {
+    name: 'Alvarez Auto Repair', city: 'Fresno, CA', initials: 'AA', score: 51, tag: 'medium',
+    finding: 'Site is 12 years old', severity: 'bg-amber-400', phone: true, email: true,
+    tint: 'bg-sky-400/15 text-sky-200',
+    message: 'Hi Alvarez Auto Repair — your site was built around 2013 and still runs jQuery 1.x. I rebuild shop sites like yours without the downtime.',
+  },
+  {
+    name: 'Northside Physio', city: 'Dublin, IE', initials: 'NP', score: 38, tag: 'low',
+    finding: 'Listing has no photos', severity: 'bg-white/40', phone: false, email: true,
+    tint: 'bg-emerald-400/15 text-emerald-200',
+    message: 'Hi Northside Physio — your website is fine, but your Google listing has no photos, which is where most people decide. Happy to sort that.',
+  },
 ]
 
-function HeroVisual() {
+const HERO_FILTERS = [
+  { id: 'high', label: 'Score 70+', test: (l) => l.score >= 70 },
+  { id: 'phone', label: 'Has phone', test: (l) => l.phone },
+]
+
+/* Columns as one grid template shared by the header row and every data row,
+   so they line up down the panel. Rows laid out independently with
+   `justify-between` was the single biggest tell that this was a drawing of
+   an app rather than a screenshot of one - real tables have columns. */
+const HERO_COLS = 'grid-cols-[minmax(0,1fr)_9.5rem_2.75rem] sm:grid-cols-[minmax(0,1fr)_11rem_3rem]'
+
+/* The proposal card asserted "every price is editable" underneath a fixed
+   $650. Letting the reader switch line items on and off and watch the total
+   move demonstrates the same sentence instead of claiming it - and the
+   mapping shown (a finding becomes a priced service) is the one the product
+   actually makes. */
+const PROPOSAL_ITEMS = [
+  { id: 'ssl', finding: 'No HTTPS', service: 'SSL setup & redirects', price: 150 },
+  { id: 'mobile', finding: 'No mobile viewport', service: 'Mobile rebuild', price: 400 },
+  { id: 'photos', finding: 'No Google photos', service: 'Listing photo service', price: 100 },
+  { id: 'speed', finding: 'Slow first load', service: 'Performance pass', price: 200 },
+]
+
+function ProposalBuilder() {
+  const [on, setOn] = useState(['ssl', 'mobile', 'photos'])
+  const toggle = (id) =>
+    setOn((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]))
+
+  const total = PROPOSAL_ITEMS.filter((i) => on.includes(i.id)).reduce((sum, i) => sum + i.price, 0)
+
   return (
-    <div className="relative mt-14 sm:mt-20 max-w-3xl mx-auto px-2">
-      <div
-        className="rounded-2xl bg-white/10 backdrop-blur-xl shadow-2xl ring-1 ring-white/15 overflow-hidden"
-        style={{ transform: 'perspective(1400px) rotateX(4deg)' }}
-      >
-        <div className="flex items-center gap-1.5 px-4 py-3 bg-white/5 border-b border-white/10">
-          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
-          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
-          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
-          <span className="ml-3 text-xs text-white/40 font-medium">leadforge.app/leads</span>
+    <div className="card p-0 overflow-hidden max-w-lg mx-auto">
+      <div className="px-6 py-4 border-b border-gray-200/60 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-primary-600" aria-hidden="true" />
+          <span className="text-sm font-semibold text-gray-900">Website Rebuild Proposal</span>
         </div>
-        <div className="divide-y divide-white/10">
-          {MOCK_LEADS.map((lead) => (
-            <div key={lead.name} className="flex items-center justify-between gap-4 px-5 py-4">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{lead.name}</p>
-                <p className="text-xs text-white/40 mt-0.5">{lead.city}</p>
-              </div>
-              <span className="hidden sm:inline-flex items-center text-xs font-medium text-white/60 bg-white/10 px-2 py-0.5 rounded-md whitespace-nowrap">
-                {lead.finding}
+        <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+          <Clock className="w-3 h-3" aria-hidden="true" /> Viewed 2h ago
+        </span>
+      </div>
+
+      <div className="px-6 py-4 space-y-1">
+        {PROPOSAL_ITEMS.map((item) => {
+          const included = on.includes(item.id)
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => toggle(item.id)}
+              aria-pressed={included}
+              className="w-full flex items-center gap-3 rounded-lg px-2 py-2 -mx-2 text-left hover:bg-gray-100/70 transition-colors"
+            >
+              <span
+                className={`w-4 h-4 shrink-0 rounded grid place-items-center ring-1 transition-colors ${
+                  included
+                    ? 'bg-emerald-500 ring-emerald-500'
+                    : 'bg-transparent ring-gray-300'
+                }`}
+              >
+                {included && <Check className="w-3 h-3 text-white" aria-hidden="true" />}
               </span>
-              <span className={`shrink-0 badge-${lead.tag}`}>{lead.score}</span>
-            </div>
+              <span className={`min-w-0 flex-1 text-sm ${included ? 'text-gray-700' : 'text-gray-400'}`}>
+                <span className="text-gray-400">{item.finding}</span>
+                <span className="mx-1.5 text-gray-300">→</span>
+                <span className={included ? 'text-gray-900 font-medium' : ''}>{item.service}</span>
+              </span>
+              <span
+                className={`shrink-0 text-sm tabular-nums ${
+                  included ? 'text-gray-900 font-medium' : 'text-gray-300 line-through'
+                }`}
+              >
+                ${item.price}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="px-6 py-4 border-t border-gray-200/60 flex items-center justify-between">
+        <span className="text-xs text-gray-400">leadforge.app/p/8f2a1c</span>
+        <span className="text-lg font-bold text-gray-900 tabular-nums">${total}</span>
+      </div>
+    </div>
+  )
+}
+
+/* The scoring section used to be three bars at fixed widths beside a
+   paragraph describing the formula. Since the formula is the thing the
+   section is asking to be trusted, it is more convincing to hand it over
+   and let someone drive it: change what the business has and watch the
+   components, the total and the tag move.
+
+   The weights below are the product's own, not illustrative numbers. */
+const WEBSITE_STATES = [
+  { id: 'none', label: 'No website', need: 60 },
+  { id: 'broken', label: 'Broken', need: 55 },
+  { id: 'social', label: 'Social page only', need: 50 },
+  { id: 'outdated', label: 'Outdated', need: 45 },
+  { id: 'modern', label: 'Modern', need: 12 },
+]
+
+function ScoreCalculator() {
+  const [site, setSite] = useState('none')
+  const [phone, setPhone] = useState(true)
+  const [email, setEmail] = useState(false)
+  const [address, setAddress] = useState(true)
+  const [rating, setRating] = useState(4.5)
+
+  const need = WEBSITE_STATES.find((s) => s.id === site).need
+  const reach = (phone ? 12 : 0) + (email ? 8 : 0) + (address ? 5 : 0)
+  const viability = (rating >= 4.5 ? 12 : rating >= 4.0 ? 10 : rating >= 3.0 ? 6 : 0) + 3
+
+  // The real rule: a lead nobody can contact is scaled back, however badly
+  // it needs a site, because it cannot be pitched.
+  const unreachable = !phone && !email
+  const raw = need + reach + viability
+  const total = Math.round(unreachable ? raw * 0.55 : raw)
+  const tag = total >= 70 ? 'high' : total >= 45 ? 'medium' : 'low'
+  const tagLabel = total >= 70 ? 'High' : total >= 45 ? 'Medium' : 'Low'
+
+  const parts = [
+    { label: 'Need', value: need, max: 60, color: 'bg-primary-600' },
+    { label: 'Reach', value: reach, max: 25, color: 'bg-[#0ea5e9]' },
+    { label: 'Viability', value: viability, max: 15, color: 'bg-[#7c3aed]' },
+  ]
+
+  const toggles = [
+    { label: 'Phone', on: phone, set: setPhone, pts: '+12' },
+    { label: 'Email', on: email, set: setEmail, pts: '+8' },
+    { label: 'Address', on: address, set: setAddress, pts: '+5' },
+  ]
+
+  return (
+    <div className="card">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">
+            Try it
+          </p>
+          <p className="mt-1 text-sm text-gray-500">Change the business, watch the score.</p>
+        </div>
+        <div className="text-right shrink-0">
+          <div className="text-4xl font-bold text-gray-900 tabular-nums leading-none">{total}</div>
+          <span className={`mt-2 inline-flex badge-${tag}`}>{tagLabel}</span>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <p className="text-xs font-medium text-gray-500 mb-2">Their website</p>
+        <div className="flex flex-wrap gap-1.5">
+          {WEBSITE_STATES.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => setSite(s.id)}
+              aria-pressed={site === s.id}
+              className={`rounded-md px-2.5 py-1 text-xs font-medium ring-1 transition-colors ${
+                site === s.id
+                  ? 'bg-primary-600 text-white ring-primary-600'
+                  : 'bg-gray-100 text-gray-600 ring-transparent hover:bg-gray-200'
+              }`}
+            >
+              {s.label}
+            </button>
           ))}
         </div>
       </div>
 
-      <div className="hidden sm:block absolute -bottom-8 -left-6 w-64 rounded-xl bg-white/10 backdrop-blur-xl shadow-2xl ring-1 ring-white/15 p-3.5 rotate-[-3deg]">
+      <div className="mt-5">
+        <p className="text-xs font-medium text-gray-500 mb-2">You can reach them by</p>
+        <div className="flex flex-wrap gap-1.5">
+          {toggles.map((t) => (
+            <button
+              key={t.label}
+              type="button"
+              onClick={() => t.set((v) => !v)}
+              aria-pressed={t.on}
+              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium ring-1 transition-colors ${
+                t.on
+                  ? 'bg-primary-50 text-primary-700 ring-primary-200'
+                  : 'bg-gray-100 text-gray-400 ring-transparent hover:bg-gray-200'
+              }`}
+            >
+              {t.on ? <Check className="w-3 h-3" aria-hidden="true" /> : null}
+              {t.label}
+              <span className="text-[10px] opacity-60">{t.pts}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <label htmlFor="lf-rating" className="flex items-baseline justify-between text-xs font-medium text-gray-500">
+          Google rating
+          <span className="tabular-nums text-gray-700">{rating.toFixed(1)}</span>
+        </label>
+        <input
+          id="lf-rating"
+          type="range"
+          min="1"
+          max="5"
+          step="0.1"
+          value={rating}
+          onChange={(e) => setRating(Number(e.target.value))}
+          className="mt-2 w-full accent-primary-600"
+        />
+      </div>
+
+      <div className="mt-6 space-y-3 pt-5 border-t border-gray-200/70">
+        {parts.map((p) => (
+          <div key={p.label}>
+            <div className="flex items-baseline justify-between mb-1">
+              <span className="text-sm font-medium text-gray-700">{p.label}</span>
+              <span className="text-xs text-gray-400 tabular-nums">
+                {p.value} / {p.max}
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+              <div
+                className={`h-full rounded-full ${p.color} transition-[width] duration-300`}
+                style={{ width: `${(p.value / p.max) * 100}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {unreachable && (
+        <p className="mt-4 text-xs text-amber-700 bg-amber-50 rounded-md px-2.5 py-2">
+          No phone and no email — scaled to 55%, because it can’t be pitched.
+        </p>
+      )}
+    </div>
+  )
+}
+
+/* A working panel rather than a picture of one: the filters filter, the
+   score column sorts, and picking a lead writes that lead's outreach into
+   the draft below. The point of the product is that a finding becomes a
+   message, and letting someone click a row and watch that happen argues it
+   better than a caption claiming it does.
+
+   No perspective tilt any more either - a rotated pane says "screenshot,
+   for looking at". Sitting square says "this one works". */
+function HeroVisual() {
+  const [active, setActive] = useState([])
+  const [sortDesc, setSortDesc] = useState(true)
+  const [selected, setSelected] = useState(MOCK_LEADS[0].name)
+
+  const toggleFilter = (id) =>
+    setActive((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]))
+
+  const rows = MOCK_LEADS
+    .filter((lead) => HERO_FILTERS.every((f) => !active.includes(f.id) || f.test(lead)))
+    .sort((a, b) => (sortDesc ? b.score - a.score : a.score - b.score))
+
+  // The selection has to survive being filtered out of view, or the draft
+  // below would keep quoting a lead the table no longer shows.
+  const shown = rows.find((l) => l.name === selected) || rows[0]
+
+  return (
+    <div className="relative mt-16 sm:mt-24 max-w-4xl mx-auto px-4 sm:px-2">
+      {/* Light pooling under the panel, so it sits on the page instead of
+          being pasted onto it. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-x-10 -bottom-10 top-10 rounded-[3rem] bg-[#4a5ae8]/20 blur-[70px]"
+      />
+
+      <div className="relative rounded-2xl bg-white/[0.07] backdrop-blur-2xl shadow-2xl ring-1 ring-white/15 overflow-hidden">
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.05] border-b border-white/10">
+          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
+          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
+          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
+          <span className="mx-auto inline-flex items-center gap-1.5 rounded-md bg-white/[0.07] px-3 py-1 ring-1 ring-white/10">
+            <Lock className="w-2.5 h-2.5 text-white/35" aria-hidden="true" />
+            <span className="text-[11px] text-white/45">leadforge.app/leads</span>
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/10">
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-white/[0.07] px-2.5 py-1 ring-1 ring-white/10 min-w-0">
+            <Search className="w-3 h-3 text-white/35 shrink-0" aria-hidden="true" />
+            <span className="text-[11px] text-white/55 truncate">dentists in Austin, TX</span>
+          </span>
+          {HERO_FILTERS.map((f) => {
+            const on = active.includes(f.id)
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => toggleFilter(f.id)}
+                aria-pressed={on}
+                className={`hidden sm:inline-flex items-center rounded-md px-2 py-1 text-[11px] font-medium ring-1 transition-colors ${
+                  on
+                    ? 'bg-primary-500/25 text-[#c7d7fe] ring-primary-400/40'
+                    : 'bg-white/[0.07] text-white/50 ring-white/10 hover:bg-white/[0.12] hover:text-white/80'
+                }`}
+              >
+                {f.label}
+              </button>
+            )
+          })}
+          <span className="ml-auto shrink-0 text-[11px] text-white/35 tabular-nums">
+            {rows.length} lead{rows.length === 1 ? '' : 's'}
+          </span>
+        </div>
+
+        <div className={`grid ${HERO_COLS} gap-3 sm:gap-4 px-4 sm:px-5 py-2 border-b border-white/10`}>
+          <span className="text-[10px] font-medium uppercase tracking-wider text-white/30">Business</span>
+          <span className="text-[10px] font-medium uppercase tracking-wider text-white/30">Top finding</span>
+          <button
+            type="button"
+            onClick={() => setSortDesc((v) => !v)}
+            className="flex items-center justify-end gap-0.5 text-[10px] font-medium uppercase tracking-wider text-white/30 hover:text-white/70 transition-colors"
+            aria-label={`Sort by score, currently ${sortDesc ? 'highest' : 'lowest'} first`}
+          >
+            Score
+            <ChevronDown
+              className={`w-3 h-3 transition-transform ${sortDesc ? '' : 'rotate-180'}`}
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+
+        <div className="divide-y divide-white/[0.07]">
+          {rows.map((lead) => {
+            const isOn = shown && shown.name === lead.name
+            return (
+              <button
+                key={lead.name}
+                type="button"
+                onClick={() => setSelected(lead.name)}
+                aria-pressed={isOn}
+                className={`w-full text-left grid ${HERO_COLS} gap-3 sm:gap-4 items-center px-4 sm:px-5 py-3 transition-colors ${
+                  isOn ? 'bg-white/[0.10]' : 'hover:bg-white/[0.05]'
+                }`}
+              >
+                <span className="flex items-center gap-3 min-w-0">
+                  <span
+                    className={`hidden sm:flex w-7 h-7 shrink-0 rounded-md items-center justify-center text-[10px] font-semibold ring-1 ring-white/10 ${lead.tint}`}
+                  >
+                    {lead.initials}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-medium text-white truncate">{lead.name}</span>
+                    <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-white/35">
+                      <span className="truncate">{lead.city}</span>
+                      {/* Reachability is what the score's Reach component is
+                          about, so the row shows it the way the app does. */}
+                      {lead.phone && <Phone className="w-2.5 h-2.5 shrink-0" aria-hidden="true" />}
+                      {lead.email && <Mail className="w-2.5 h-2.5 shrink-0" aria-hidden="true" />}
+                    </span>
+                  </span>
+                </span>
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-white/[0.07] px-2 py-0.5 ring-1 ring-white/10 min-w-0">
+                  <span className={`w-1.5 h-1.5 shrink-0 rounded-full ${lead.severity}`} />
+                  <span className="text-[11px] text-white/55 truncate">{lead.finding}</span>
+                </span>
+                <span className={`justify-self-end tabular-nums badge-${lead.tag}`}>{lead.score}</span>
+              </button>
+            )
+          })}
+
+          {rows.length === 0 && (
+            <p className="px-5 py-8 text-center text-[12px] text-white/40">
+              No leads match those filters.
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between px-4 sm:px-5 py-2 border-t border-white/10">
+          <span className="text-[11px] text-white/30 tabular-nums">
+            Showing {rows.length} of {MOCK_LEADS.length}
+          </span>
+          <span className="text-[11px] text-white/25 hidden sm:inline">Pick a lead to see its outreach</span>
+        </div>
+      </div>
+
+      {/* Static below lg, where it becomes the second half of the demo, and
+          a floating second window above it - one element either way rather
+          than two copies of the same card in the DOM. */}
+      <div className="mt-5 lg:mt-0 lg:absolute lg:-bottom-16 lg:-left-10 w-full lg:w-64 rounded-xl bg-white/[0.09] backdrop-blur-2xl shadow-2xl ring-1 ring-white/15 p-3.5 lg:-rotate-2">
         <div className="flex items-center gap-1.5 mb-2">
           <MessageCircle className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
           <span className="text-[11px] font-semibold text-white/60">WhatsApp draft</span>
+          <span className="ml-auto text-[10px] text-white/30 truncate max-w-[9rem]">
+            {shown ? shown.name : '—'}
+          </span>
         </div>
-        <p className="text-[11px] text-white/80 leading-snug">
-          Hi Riverside Dental — I had a look at your site on my phone and it
-          isn’t mobile-friendly. Fixed a few of these for other clinics near you...
+        {/* aria-live, so choosing a row announces the new draft rather than
+            silently swapping text under a screen reader. */}
+        <p aria-live="polite" className="text-[11px] text-white/80 leading-snug">
+          {shown ? shown.message : 'Select a lead to draft its opening message.'}
         </p>
       </div>
     </div>
@@ -485,7 +868,7 @@ export default function Landing() {
 
       <main>
         {/* ---- Hero --------------------------------------------------- */}
-        <section className="relative overflow-hidden bg-[#080c1a] bg-gradient-to-br from-[#0b1122] via-[#111a35] to-[#0a0f1e] pt-36 pb-24 sm:pt-44 sm:pb-32">
+        <section className="relative overflow-hidden bg-[#080c1a] bg-gradient-to-br from-[#0b1122] via-[#111a35] to-[#0a0f1e] pt-36 pb-36 sm:pt-44 sm:pb-48">
           {/* Two soft light sources, so a large flat area of brand colour has
               somewhere for the eye to rest, plus a hairline of light along the
               top edge, the way a lit surface catches its own boundary — the
@@ -680,19 +1063,8 @@ export default function Landing() {
               </div>
             </Reveal>
 
-            <Reveal delay={100} className="card space-y-6">
-              {SCORE_COMPONENTS.map((c) => (
-                <div key={c.label}>
-                  <div className="flex items-baseline justify-between mb-1.5">
-                    <span className="font-semibold text-gray-900 text-sm">{c.label}</span>
-                    <span className="text-xs text-gray-400">{c.range}</span>
-                  </div>
-                  <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
-                    <div className={`h-full rounded-full ${c.color}`} style={{ width: c.width }} />
-                  </div>
-                  <p className="mt-1.5 text-xs text-gray-500">{c.detail}</p>
-                </div>
-              ))}
+            <Reveal delay={100}>
+              <ScoreCalculator />
             </Reveal>
           </div>
         </section>
@@ -759,30 +1131,12 @@ export default function Landing() {
               </SectionHeading>
             </Reveal>
 
-            <Reveal delay={100} className="card p-0 overflow-hidden max-w-lg mx-auto">
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-primary-600" aria-hidden="true" />
-                  <span className="text-sm font-semibold text-gray-900">Website Rebuild Proposal</span>
-                </div>
-                <span className="inline-flex items-center gap-1 text-xs text-gray-400">
-                  <Clock className="w-3 h-3" aria-hidden="true" /> Viewed 2h ago
-                </span>
-              </div>
-              <div className="px-6 py-5 space-y-3">
-                {['No HTTPS → SSL setup', 'No mobile viewport → mobile rebuild', 'No Google photos → listing service'].map((row) => (
-                  <div key={row} className="flex items-center gap-2 text-sm text-gray-600">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" aria-hidden="true" />
-                    {row}
-                  </div>
-                ))}
-              </div>
-              <div className="px-6 py-4 bg-gray-50 flex items-center justify-between">
-                <span className="text-xs text-gray-400">leadforge.app/p/8f2a1c</span>
-                <span className="text-lg font-bold text-gray-900">$650</span>
-              </div>
+            <Reveal delay={100}>
+              <ProposalBuilder />
             </Reveal>
-            <p className="text-center mt-5 text-sm text-gray-400">Every price is a starting point — all of it is editable.</p>
+            <p className="text-center mt-5 text-sm text-gray-400">
+              Every price is a starting point — all of it is editable.
+            </p>
           </div>
         </section>
 
