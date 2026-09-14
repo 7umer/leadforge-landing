@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   Zap, Sun, Moon, Menu, X, Search, ShieldCheck, Send, MapPin, Smartphone,
-  Mail, Languages, Star, Filter, TrendingUp, Check, ChevronDown, ArrowRight,
+  Mail, Languages, Star, Filter, TrendingUp, Check, Plus, ArrowRight,
   FileText, MessageCircle, Clock, Gift, Building2, KeyRound, Lock, Download,
   FlaskConical, Github, ListX, Globe2, MessageSquareDashed, Layers,
 } from 'lucide-react'
@@ -61,15 +61,17 @@ function Reveal({ children, delay = 0, className = '' }) {
    The eyebrow gives each one an identity at a glance and gives the eye a
    third size to step down from, so the hierarchy is heading-sized rather
    than just "big text, small text". */
-function SectionHeading({ eyebrow, title, children, align = 'center' }) {
+function SectionHeading({ eyebrow, title, children, align = 'left' }) {
   const centered = align === 'center'
   return (
-    <div className={centered ? 'text-center max-w-2xl mx-auto' : ''}>
-      <p className={`text-xs font-semibold uppercase tracking-[0.14em] text-primary-600 ${centered ? '' : 'text-left'}`}>
-        {eyebrow}
-      </p>
-      <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-gray-900">{title}</h2>
-      {children && <p className="mt-4 text-lg text-gray-500 leading-relaxed">{children}</p>}
+    <div className={centered ? 'text-center max-w-3xl mx-auto' : 'max-w-2xl'}>
+      <p className="eyebrow">{eyebrow}</p>
+      {/* Weight 300 at display size: the hierarchy comes from scale, not from
+          bolding, which is what keeps a page this large feeling calm. */}
+      <h2 className="mt-4 text-4xl sm:text-5xl lg:text-[3.5rem] font-light leading-[1.05] tracking-[-0.02em] text-gray-900">
+        {title}
+      </h2>
+      {children && <p className="mt-6 text-base sm:text-lg text-gray-600 leading-relaxed">{children}</p>}
     </div>
   )
 }
@@ -278,24 +280,30 @@ const NAV_LINKS = [
   { href: '#faq', label: 'FAQ' },
 ]
 
+function Logo({ className = '' }) {
+  return (
+    <span className={`flex items-center gap-3 ${className}`}>
+      <span className="grid h-8 w-8 place-items-center border border-current">
+        <Zap className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
+      </span>
+      <span className="text-[15px] font-semibold uppercase tracking-[0.18em]">LeadForge</span>
+    </span>
+  )
+}
+
+/* A solid black bar rather than a transparent one that turns white on
+   scroll: the sections under it alternate between black media and white
+   copy, and a bar that changed colour at every boundary would flicker all
+   the way down the page. Black holds still over both. */
 function Nav() {
   const [theme, toggleTheme] = useTheme()
-  const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [active, setActive] = useState('')
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
 
   /* Which anchored section the reader is actually in. The rootMargin pins
      the decision line near the top of the viewport rather than the middle:
      a section counts as "current" once its heading is up under the nav,
-     which is where a reader thinks they are - not once it happens to cover
-     half the screen. */
+     which is where a reader thinks they are. */
   useEffect(() => {
     const sections = NAV_LINKS
       .map((l) => document.getElementById(l.href.slice(1)))
@@ -307,112 +315,93 @@ function Nav() {
           if (entry.isIntersecting) setActive(`#${entry.target.id}`)
         })
       },
-      { rootMargin: '-72px 0px -70% 0px' }
+      { rootMargin: '-88px 0px -70% 0px' }
     )
     sections.forEach((s) => observer.observe(s))
     return () => observer.disconnect()
   }, [])
 
-  const links = NAV_LINKS
+  const themeLabel = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
 
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-200 ${
-        scrolled
-          ? 'bg-surface/60 backdrop-blur-xl border-b border-white/40 dark:border-white/10 shadow-sm'
-          : 'bg-transparent border-b border-transparent'
-      }`}
-    >
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-        <a href="#" className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-button">
-            <Zap className="w-4.5 h-4.5 text-white" aria-hidden="true" />
-          </div>
-          <span className={`text-lg font-bold tracking-tight ${scrolled ? 'text-gray-900' : 'text-white'}`}>
-            LeadForge
-          </span>
+    <header className="fixed inset-x-0 top-0 z-50 bg-black text-white">
+      <div className="mx-auto flex h-20 max-w-[88rem] items-center justify-between gap-6 px-5 sm:px-10">
+        <a href="#top" aria-label="LeadForge home" className="shrink-0">
+          <Logo />
         </a>
 
-        <nav className="hidden md:flex items-center gap-8" aria-label="Section">
-          {links.map((l) => {
+        <nav className="hidden items-center gap-9 md:flex" aria-label="Section">
+          {NAV_LINKS.map((l) => {
             const isActive = active === l.href
             return (
               <a
                 key={l.href}
                 href={l.href}
                 aria-current={isActive ? 'true' : undefined}
-                className={`relative py-1 text-sm font-medium transition-colors ${
-                  scrolled
-                    ? isActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
-                    : isActive ? 'text-white' : 'text-white/80 hover:text-white'
+                className={`relative py-1 text-[15px] transition-colors ${
+                  isActive ? 'text-white' : 'text-white/65 hover:text-white'
                 }`}
               >
                 {l.label}
-                {/* An underline rather than a colour change alone: over the
-                    hero the link sits on a dark gradient, where "slightly
-                    brighter white" is not a difference anyone can see. */}
                 <span
                   aria-hidden="true"
-                  className={`absolute -bottom-0.5 left-0 h-px w-full origin-left transition-transform duration-200 ${
-                    scrolled ? 'bg-primary-600' : 'bg-white'
-                  } ${isActive ? 'scale-x-100' : 'scale-x-0'}`}
+                  className={`absolute -bottom-0.5 left-0 h-px w-full origin-left bg-white transition-transform duration-300 ${
+                    isActive ? 'scale-x-100' : 'scale-x-0'
+                  }`}
                 />
               </a>
             )
           })}
         </nav>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden items-center gap-6 md:flex">
           <button
+            type="button"
             onClick={toggleTheme}
-            className={`p-2 rounded-lg transition-colors ${
-              scrolled ? 'text-gray-500 hover:text-gray-900 hover:bg-gray-100' : 'text-white/80 hover:text-white hover:bg-white/10'
-            }`}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="p-1 text-white/65 transition-colors hover:text-white"
+            aria-label={themeLabel}
           >
-            {theme === 'dark' ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
+            {theme === 'dark' ? <Sun className="h-[18px] w-[18px]" strokeWidth={1.5} /> : <Moon className="h-[18px] w-[18px]" strokeWidth={1.5} />}
           </button>
-          <a
-            href={LOGIN_URL}
-            className={`text-sm font-medium ${scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/80 hover:text-white'}`}
-          >
+          <a href={LOGIN_URL} className="text-[15px] text-white/65 transition-colors hover:text-white">
             Log in
           </a>
-          <a href={REGISTER_URL} className="btn-primary text-sm">
+          <a href={REGISTER_URL} className="pill pill-on-dark px-6 py-3 text-sm">
             Start free
           </a>
         </div>
 
         <button
+          type="button"
           onClick={() => setMenuOpen((v) => !v)}
-          className={`md:hidden p-2 rounded-lg ${scrolled ? 'text-gray-700' : 'text-white'}`}
+          className="p-2 text-white md:hidden"
           aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={menuOpen}
         >
-          {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {menuOpen ? <X className="h-5 w-5" strokeWidth={1.5} /> : <Menu className="h-5 w-5" strokeWidth={1.5} />}
         </button>
       </div>
 
       {menuOpen && (
-        <div className="md:hidden bg-surface/80 backdrop-blur-xl border-t border-white/40 dark:border-white/10 px-5 py-4 space-y-3">
-          {links.map((l) => (
+        <div className="border-t border-white/10 bg-black px-5 pb-6 md:hidden">
+          {NAV_LINKS.map((l) => (
             <a
               key={l.href}
               href={l.href}
               onClick={() => setMenuOpen(false)}
-              className="block text-sm font-medium text-gray-700 py-1"
+              className="block border-b border-white/10 py-4 text-xl font-light text-white/85"
             >
               {l.label}
             </a>
           ))}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-            <button onClick={toggleTheme} className="flex items-center gap-2 text-sm text-gray-600">
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          <div className="mt-6 flex items-center justify-between gap-4">
+            <button type="button" onClick={toggleTheme} className="flex items-center gap-2 text-sm text-white/65">
+              {theme === 'dark' ? <Sun className="h-4 w-4" strokeWidth={1.5} /> : <Moon className="h-4 w-4" strokeWidth={1.5} />}
               {theme === 'dark' ? 'Light mode' : 'Dark mode'}
             </button>
             <div className="flex items-center gap-4">
-              <a href={LOGIN_URL} className="text-sm font-medium text-gray-600">Log in</a>
-              <a href={REGISTER_URL} className="btn-primary text-sm">Start free</a>
+              <a href={LOGIN_URL} onClick={() => setMenuOpen(false)} className="text-sm text-white/65">Log in</a>
+              <a href={REGISTER_URL} onClick={() => setMenuOpen(false)} className="pill pill-solid-on-dark px-5 py-3 text-sm">Start free</a>
             </div>
           </div>
         </div>
@@ -441,18 +430,18 @@ function ProposalBuilder() {
   const total = PROPOSAL_ITEMS.filter((i) => on.includes(i.id)).reduce((sum, i) => sum + i.price, 0)
 
   return (
-    <div className="card p-0 overflow-hidden max-w-lg mx-auto">
-      <div className="px-6 py-4 border-b border-gray-200/60 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-primary-600" aria-hidden="true" />
-          <span className="text-sm font-semibold text-gray-900">Website Rebuild Proposal</span>
-        </div>
-        <span className="inline-flex items-center gap-1 text-xs text-gray-400">
-          <Clock className="w-3 h-3" aria-hidden="true" /> Viewed 2h ago
+    <div className="border border-gray-200 bg-surface">
+      <div className="flex items-center justify-between gap-4 border-b border-gray-200 px-6 py-5 sm:px-10">
+        <span className="flex items-center gap-3">
+          <FileText className="h-5 w-5 text-gray-900" strokeWidth={1.25} aria-hidden="true" />
+          <span className="text-lg font-light text-gray-900">Website rebuild proposal</span>
+        </span>
+        <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+          <Clock className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" /> Viewed 2h ago
         </span>
       </div>
 
-      <div className="px-6 py-4 space-y-1">
+      <div className="px-6 py-4 sm:px-10">
         {PROPOSAL_ITEMS.map((item) => {
           const included = on.includes(item.id)
           return (
@@ -461,25 +450,23 @@ function ProposalBuilder() {
               type="button"
               onClick={() => toggle(item.id)}
               aria-pressed={included}
-              className="w-full flex items-center gap-3 rounded-lg px-2 py-2 -mx-2 text-left hover:bg-gray-100/70 transition-colors"
+              className="group flex w-full items-center gap-4 border-b border-gray-100 py-4 text-left last:border-b-0"
             >
               <span
-                className={`w-4 h-4 shrink-0 rounded grid place-items-center ring-1 transition-colors ${
-                  included
-                    ? 'bg-emerald-500 ring-emerald-500'
-                    : 'bg-transparent ring-gray-300'
+                className={`grid h-5 w-5 shrink-0 place-items-center border transition-colors ${
+                  included ? 'border-gray-900 bg-gray-900' : 'border-gray-300 group-hover:border-gray-900'
                 }`}
               >
-                {included && <Check className="w-3 h-3 text-white" aria-hidden="true" />}
+                {included && <Check className="h-3.5 w-3.5 text-surface" strokeWidth={2} aria-hidden="true" />}
               </span>
-              <span className={`min-w-0 flex-1 text-sm ${included ? 'text-gray-700' : 'text-gray-400'}`}>
-                <span className="text-gray-400">{item.finding}</span>
-                <span className="mx-1.5 text-gray-300">→</span>
-                <span className={included ? 'text-gray-900 font-medium' : ''}>{item.service}</span>
+              <span className="min-w-0 flex-1 text-[15px]">
+                <span className="text-gray-500">{item.finding}</span>
+                <span className="mx-2 text-gray-300">→</span>
+                <span className={included ? 'text-gray-900' : 'text-gray-400'}>{item.service}</span>
               </span>
               <span
-                className={`shrink-0 text-sm tabular-nums ${
-                  included ? 'text-gray-900 font-medium' : 'text-gray-300 line-through'
+                className={`shrink-0 text-[15px] tabular-nums ${
+                  included ? 'text-gray-900' : 'text-gray-300 line-through'
                 }`}
               >
                 ${item.price}
@@ -489,21 +476,17 @@ function ProposalBuilder() {
         })}
       </div>
 
-      <div className="px-6 py-4 border-t border-gray-200/60 flex items-center justify-between">
-        <span className="text-xs text-gray-400">leadforge.app/p/8f2a1c</span>
-        <span className="text-lg font-bold text-gray-900 tabular-nums">${total}</span>
+      <div className="flex items-end justify-between gap-4 border-t border-gray-200 px-6 py-6 sm:px-10">
+        <span className="text-xs text-gray-500">leadforge.app/p/8f2a1c</span>
+        <span className="text-5xl font-light tracking-[-0.03em] text-gray-900 tabular-nums">${total}</span>
       </div>
     </div>
   )
 }
 
-/* The scoring section used to be three bars at fixed widths beside a
-   paragraph describing the formula. Since the formula is the thing the
-   section is asking to be trusted, it is more convincing to hand it over
-   and let someone drive it: change what the business has and watch the
-   components, the total and the tag move.
-
-   The weights below are the product's own, not illustrative numbers. */
+/* The weights below are the product's own, not illustrative numbers: the
+   section asks for the formula to be trusted, so it hands the formula over
+   and lets someone drive it. */
 const WEBSITE_STATES = [
   { id: 'none', label: 'No website', need: 60 },
   { id: 'broken', label: 'Broken', need: 55 },
@@ -511,6 +494,23 @@ const WEBSITE_STATES = [
   { id: 'outdated', label: 'Outdated', need: 45 },
   { id: 'modern', label: 'Modern', need: 12 },
 ]
+
+function OptionButton({ selected, onClick, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition-colors ${
+        selected
+          ? 'border-gray-900 bg-gray-900 text-surface'
+          : 'border-gray-300 text-gray-700 hover:border-gray-900 hover:text-gray-900'
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
 
 function ScoreCalculator() {
   const [site, setSite] = useState('none')
@@ -532,9 +532,9 @@ function ScoreCalculator() {
   const tagLabel = total >= 70 ? 'High' : total >= 45 ? 'Medium' : 'Low'
 
   const parts = [
-    { label: 'Need', value: need, max: 60, color: 'bg-primary-600' },
-    { label: 'Reach', value: reach, max: 25, color: 'bg-[#0ea5e9]' },
-    { label: 'Viability', value: viability, max: 15, color: 'bg-[#7c3aed]' },
+    { label: 'Need', value: need, max: 60 },
+    { label: 'Reach', value: reach, max: 25 },
+    { label: 'Viability', value: viability, max: 15 },
   ]
 
   const toggles = [
@@ -544,68 +544,46 @@ function ScoreCalculator() {
   ]
 
   return (
-    <div className="card">
-      <div className="flex items-start justify-between gap-4">
+    <div className="border border-gray-200 bg-surface p-6 sm:p-10">
+      <div className="flex items-start justify-between gap-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">
-            Try it
-          </p>
-          <p className="mt-1 text-sm text-gray-500">Change the business, watch the score.</p>
+          <p className="eyebrow">Try it</p>
+          <p className="mt-2 text-gray-600">Change the business, watch the score.</p>
         </div>
-        <div className="text-right shrink-0">
-          <div className="text-4xl font-bold text-gray-900 tabular-nums leading-none">{total}</div>
-          <span className={`mt-2 inline-flex badge-${tag}`}>{tagLabel}</span>
+        <div className="shrink-0 text-right">
+          <div className="text-7xl font-light leading-none tracking-[-0.04em] text-gray-900 tabular-nums">{total}</div>
+          <span className={`mt-3 inline-flex badge-${tag}`}>{tagLabel}</span>
         </div>
       </div>
 
-      <div className="mt-6">
-        <p className="text-xs font-medium text-gray-500 mb-2">Their website</p>
-        <div className="flex flex-wrap gap-1.5">
+      <div className="mt-10">
+        <p className="mb-3 text-sm text-gray-600">Their website</p>
+        <div className="flex flex-wrap gap-2">
           {WEBSITE_STATES.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setSite(s.id)}
-              aria-pressed={site === s.id}
-              className={`rounded-md px-2.5 py-1 text-xs font-medium ring-1 transition-colors ${
-                site === s.id
-                  ? 'bg-primary-600 text-white ring-primary-600'
-                  : 'bg-gray-100 text-gray-600 ring-transparent hover:bg-gray-200'
-              }`}
-            >
+            <OptionButton key={s.id} selected={site === s.id} onClick={() => setSite(s.id)}>
               {s.label}
-            </button>
+            </OptionButton>
           ))}
         </div>
       </div>
 
-      <div className="mt-5">
-        <p className="text-xs font-medium text-gray-500 mb-2">You can reach them by</p>
-        <div className="flex flex-wrap gap-1.5">
+      <div className="mt-8">
+        <p className="mb-3 text-sm text-gray-600">You can reach them by</p>
+        <div className="flex flex-wrap gap-2">
           {toggles.map((t) => (
-            <button
-              key={t.label}
-              type="button"
-              onClick={() => t.set((v) => !v)}
-              aria-pressed={t.on}
-              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium ring-1 transition-colors ${
-                t.on
-                  ? 'bg-primary-50 text-primary-700 ring-primary-200'
-                  : 'bg-gray-100 text-gray-400 ring-transparent hover:bg-gray-200'
-              }`}
-            >
-              {t.on ? <Check className="w-3 h-3" aria-hidden="true" /> : null}
+            <OptionButton key={t.label} selected={t.on} onClick={() => t.set((v) => !v)}>
+              {t.on && <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />}
               {t.label}
-              <span className="text-[10px] opacity-60">{t.pts}</span>
-            </button>
+              <span className="text-xs opacity-60">{t.pts}</span>
+            </OptionButton>
           ))}
         </div>
       </div>
 
-      <div className="mt-5">
-        <label htmlFor="lf-rating" className="flex items-baseline justify-between text-xs font-medium text-gray-500">
+      <div className="mt-8">
+        <label htmlFor="lf-rating" className="flex items-baseline justify-between text-sm text-gray-600">
           Google rating
-          <span className="tabular-nums text-gray-700">{rating.toFixed(1)}</span>
+          <span className="text-gray-900 tabular-nums">{rating.toFixed(1)}</span>
         </label>
         <input
           id="lf-rating"
@@ -615,22 +593,22 @@ function ScoreCalculator() {
           step="0.1"
           value={rating}
           onChange={(e) => setRating(Number(e.target.value))}
-          className="mt-2 w-full accent-primary-600"
+          className="mt-3 w-full accent-gray-900"
         />
       </div>
 
-      <div className="mt-6 space-y-3 pt-5 border-t border-gray-200/70">
+      <div className="mt-10 space-y-5 border-t border-gray-200 pt-8">
         {parts.map((p) => (
           <div key={p.label}>
-            <div className="flex items-baseline justify-between mb-1">
-              <span className="text-sm font-medium text-gray-700">{p.label}</span>
-              <span className="text-xs text-gray-400 tabular-nums">
+            <div className="mb-2 flex items-baseline justify-between">
+              <span className="text-[15px] text-gray-900">{p.label}</span>
+              <span className="text-sm text-gray-500 tabular-nums">
                 {p.value} / {p.max}
               </span>
             </div>
-            <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-1 overflow-hidden bg-gray-200">
               <div
-                className={`h-full rounded-full ${p.color} transition-[width] duration-300`}
+                className="h-full bg-gray-900 transition-[width] duration-500"
                 style={{ width: `${(p.value / p.max) * 100}%` }}
               />
             </div>
@@ -639,7 +617,7 @@ function ScoreCalculator() {
       </div>
 
       {unreachable && (
-        <p className="mt-4 text-xs text-amber-700 bg-amber-50 rounded-md px-2.5 py-2">
+        <p className="mt-8 border-l border-gray-900 pl-4 text-sm text-gray-700">
           No phone and no email — scaled to 55%, because it can’t be pitched.
         </p>
       )}
@@ -647,365 +625,431 @@ function ScoreCalculator() {
   )
 }
 
+/* Each step card is cropped from the real, redacted screenshots rather than
+   from stock photography. The crops are chosen to stay clear of the
+   pixelated contact column and account email, so no card is built around
+   a block of redaction. */
+const STEP_MEDIA = [
+  { src: '/screenshots/leads.png', position: 'object-[22%_50%]' },
+  { src: '/screenshots/dashboard.png', position: 'object-[30%_50%]' },
+  { src: '/screenshots/dashboard.png', position: 'object-[100%_50%]' },
+]
 
-/* Actual screenshots of the running app, not a reconstruction of one. Both
-   were taken from a real account and then had their sensitive regions
-   destroyed in the file itself - the phone-number column and the account
-   email are pixelated in the PNG, not merely covered with a CSS blur, since
-   a blur on the page leaves the original one right-click away.
+/* One dot per position the track can actually scroll to, not one per card.
+   Where two cards are visible at once, the last card can never reach the
+   left edge - the track runs out of scroll first - so a dot for it would
+   land on the same spot as the dot before it and light the wrong one.
+   The count is re-measured on resize, since it is 3 on a phone and 2 on a
+   wide screen. */
+function measureTrack(el) {
+  const first = el && el.firstElementChild
+  if (!first) return null
+  const gap = parseFloat(getComputedStyle(el).columnGap) || 0
+  const step = first.getBoundingClientRect().width + gap
+  const max = Math.max(0, el.scrollWidth - el.clientWidth)
+  const pages = Math.max(1, Math.min(HOW_IT_WORKS.length, Math.round(max / step) + 1))
+  return { step, max, pages }
+}
 
-   Width and height are set on both so the browser reserves the space before
-   the image arrives and the hero doesn't jump as it loads. */
-function HeroVisual() {
+function StepCarousel() {
+  const trackRef = useRef(null)
+  const [index, setIndex] = useState(0)
+  const [pages, setPages] = useState(HOW_IT_WORKS.length)
+
+  const onScroll = () => {
+    const el = trackRef.current
+    const m = measureTrack(el)
+    if (!m) return
+    // At the end of the track means the last position, whatever the
+    // division says - the final step is usually shorter than a full card.
+    const i = el.scrollLeft >= m.max - 2 ? m.pages - 1 : Math.round(el.scrollLeft / m.step)
+    setIndex(Math.max(0, Math.min(m.pages - 1, i)))
+  }
+
+  useEffect(() => {
+    const el = trackRef.current
+    if (!el) return undefined
+    const update = () => {
+      const m = measureTrack(el)
+      if (!m) return
+      setPages(m.pages)
+      onScroll()
+    }
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const goTo = (i) => {
+    const el = trackRef.current
+    const m = measureTrack(el)
+    if (!m) return
+    el.scrollTo({ left: i >= m.pages - 1 ? m.max : i * m.step, behavior: 'smooth' })
+  }
+
   return (
-    <div className="relative mt-16 sm:mt-24 max-w-5xl mx-auto px-4 sm:px-2">
+    <div>
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -inset-x-10 -bottom-10 top-10 rounded-[3rem] bg-[#4a5ae8]/20 blur-[70px]"
-      />
+        ref={trackRef}
+        onScroll={onScroll}
+        aria-roledescription="carousel"
+        aria-label="How LeadForge works"
+        className="no-scrollbar -mr-5 flex snap-x snap-mandatory gap-5 overflow-x-auto pr-5 sm:-mr-10 sm:pr-10"
+      >
+        {HOW_IT_WORKS.map((s, i) => (
+          <article
+            key={s.step}
+            aria-roledescription="slide"
+            aria-label={`${i + 1} of ${HOW_IT_WORKS.length}: ${s.title}`}
+            className="media-zoom relative aspect-[4/5] w-[85%] shrink-0 snap-start overflow-hidden bg-neutral-900 text-white sm:w-[62%] xl:w-[48%]"
+          >
+            <img
+              src={STEP_MEDIA[i].src}
+              alt=""
+              aria-hidden="true"
+              width="1917"
+              height="970"
+              loading="lazy"
+              className={`absolute inset-0 h-full w-full object-cover opacity-60 ${STEP_MEDIA[i].position}`}
+            />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10" />
+            <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+              <p className="text-xs text-white/60 tabular-nums">{s.step}</p>
+              <h3 className="mt-2 text-4xl font-light uppercase tracking-[-0.01em] text-white sm:text-[2.75rem]">
+                {s.title}
+              </h3>
+              <p className="mt-4 max-w-sm text-base text-white">{s.promise}</p>
+              <p className="mt-2 hidden max-w-sm text-sm leading-relaxed text-white/65 sm:block">{s.detail}</p>
+            </div>
+          </article>
+        ))}
+      </div>
 
-      <figure className="relative rounded-2xl bg-white/[0.07] backdrop-blur-2xl shadow-2xl ring-1 ring-white/15 overflow-hidden">
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.05] border-b border-white/10">
-          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
-          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
-          <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
-          <span className="mx-auto inline-flex items-center gap-1.5 rounded-md bg-white/[0.07] px-3 py-1 ring-1 ring-white/10">
-            <Lock className="w-2.5 h-2.5 text-white/35" aria-hidden="true" />
-            <span className="text-[11px] text-white/45">leadforge.app/leads</span>
-          </span>
+      {pages > 1 && (
+        <div className="mt-8 flex justify-center gap-2.5">
+          {Array.from({ length: pages }, (_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => goTo(i)}
+              aria-label={`Go to position ${i + 1} of ${pages}`}
+              aria-current={index === i ? 'true' : undefined}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                index === i ? 'w-6 bg-gray-900' : 'w-2 bg-gray-300 hover:bg-gray-500'
+              }`}
+            />
+          ))}
         </div>
-        <img
-          src="/screenshots/leads.png"
-          width="1917"
-          height="970"
-          alt="The LeadForge leads table: businesses with a quality tag, a score out of 100 and an outreach status, above filters for quality, niche, outreach status and site condition."
-          className="block w-full"
-        />
-      </figure>
-
-      {/* The dashboard as a second window overlapping the corner - the same
-          layered treatment the draft card had, now carrying a real screen
-          rather than a drawn one. Hidden below lg, where it would cover the
-          table it is meant to sit beside. */}
-      <figure className="hidden lg:block absolute -bottom-14 -left-12 w-72 rounded-xl bg-white/[0.09] backdrop-blur-2xl shadow-2xl ring-1 ring-white/15 overflow-hidden -rotate-2">
-        <img
-          src="/screenshots/dashboard.png"
-          width="1917"
-          height="970"
-          alt="The LeadForge dashboard: total leads, usable leads, a lead-quality breakdown and the outreach pipeline."
-          className="block w-full"
-        />
-      </figure>
+      )}
     </div>
   )
 }
 
+const CONTAINER = 'mx-auto max-w-[88rem] px-5 sm:px-10'
+
 export default function Landing() {
   return (
-    /* No background colour here - body supplies it, so the ambient layer
-       below can sit behind the content without being painted over. */
-    <div className="min-h-screen">
-      <div aria-hidden="true" className="ambient pointer-events-none fixed inset-0 -z-10" />
+    <div className="min-h-screen bg-surface">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-24 focus:z-[60] focus:bg-white focus:px-4 focus:py-2 focus:text-black"
+      >
+        Skip to main content
+      </a>
       <Nav />
 
-      <main>
-        {/* ---- Hero --------------------------------------------------- */}
-        <section className="relative overflow-hidden bg-[#080c1a] bg-gradient-to-br from-[#0b1122] via-[#111a35] to-[#0a0f1e] pt-36 pb-36 sm:pt-44 sm:pb-48">
-          {/* Two soft light sources, so a large flat area of brand colour has
-              somewhere for the eye to rest, plus a hairline of light along the
-              top edge, the way a lit surface catches its own boundary — the
-              same treatment the app's own sign-in panel uses, so the front
-              door and the product look like one build. These were dimmed
-              almost out while a starfield carried the hero; with that gone
-              they are back at full strength. */}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-            <div className="absolute -top-32 -left-24 w-[30rem] h-[30rem] rounded-full bg-[#4a5ae8]/25 blur-[100px]" />
-            <div className="absolute bottom-[-6rem] right-[-4rem] w-[32rem] h-[32rem] rounded-full bg-[#7c3aed]/20 blur-[110px]" />
-            <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-[#0ea5e9]/10 blur-[90px]" />
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          </div>
+      <main id="main">
+        {/* ---- Hero ---------------------------------------------------
+            A full viewport of black with one very large, very light line
+            of type over it. The product's own dashboard sits behind as the
+            media - dimmed and softened until it is texture, since this is
+            the one place on the page where the words should win. */}
+        <section id="top" className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-black text-white">
+          <img
+            src="/screenshots/dashboard.png"
+            alt=""
+            aria-hidden="true"
+            width="1917"
+            height="970"
+            className="absolute inset-0 -z-10 h-full w-full scale-110 object-cover object-top opacity-30 blur-[3px]"
+          />
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-b from-black/85 via-black/60 to-black" />
 
-          <div className="relative max-w-4xl mx-auto px-5 sm:px-8 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center px-5 pb-16 pt-36 text-center sm:px-10">
+            <p className="eyebrow text-white/80">Client finding for freelancers</p>
             <h1
-              className="font-bold tracking-tight leading-[1.05] bg-gradient-to-br from-white via-white to-[#a5bcfc] bg-clip-text text-transparent"
-              style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }}
+              className="mt-7 max-w-5xl font-light leading-[1.02] tracking-[-0.03em]"
+              style={{ fontSize: 'clamp(2.75rem, 7vw, 6.25rem)' }}
             >
               Stop hunting for clients who never needed you.
             </h1>
-            <p className="mt-6 text-lg text-white/85 leading-relaxed max-w-2xl mx-auto">
+            <p className="mt-8 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
               LeadForge finds local businesses whose websites are broken, dated or
-              missing entirely, proves what’s wrong with a real audit and a mobile
-              screenshot, then writes the first message for you.
+              missing, proves what’s wrong, and writes the first message for you.
             </p>
-            <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <a href={REGISTER_URL} className="btn-primary px-6 py-3 text-base w-full sm:w-auto">
+            <div className="mt-11 flex flex-col items-center gap-3 sm:flex-row">
+              <a href={REGISTER_URL} className="pill pill-solid-on-dark">
                 Start free — 200 leads
-                <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </a>
-              <a
-                href="#how-it-works"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium text-white/90 border border-white/20 hover:bg-white/10 transition-colors w-full sm:w-auto"
-              >
-                See how it works
+              <a href="#product" className="pill pill-on-dark">
+                See the product
               </a>
             </div>
-            <p className="mt-4 text-sm text-white/50">No card required.</p>
+            <p className="mt-5 text-sm text-white/45">No card required.</p>
           </div>
 
-          <HeroVisual />
+          <a
+            href="#product"
+            className="mx-auto mb-8 flex flex-col items-center gap-2.5 text-white/55 transition-colors hover:text-white"
+          >
+            <span className="relative block h-9 w-[22px] rounded-full border border-current">
+              <span className="scroll-cue absolute left-[calc(50%-2px)] top-2 block h-1.5 w-1 rounded-full bg-current" />
+            </span>
+            <span className="text-xs">Scroll down</span>
+          </a>
         </section>
 
-        {/* ---- The problem --------------------------------------------- */}
-        <section className="py-24 sm:py-32">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8">
-            <Reveal>
-              <SectionHeading eyebrow="The problem" title="Most lead lists go stale before you finish dialling them">
-                Three things waste the morning, and none of them are fixed by
-                finding more businesses.
-              </SectionHeading>
+        {/* ---- The product, full width ------------------------------------ */}
+        <section id="product" className="scroll-mt-20 bg-black pb-24 pt-10 text-white sm:pb-32">
+          <div className={CONTAINER}>
+            <Reveal className="mx-auto max-w-3xl text-center">
+              <p className="eyebrow text-white/80">The product</p>
+              <h2 className="mt-4 text-4xl font-light leading-[1.05] tracking-[-0.02em] text-white sm:text-5xl lg:text-6xl">
+                Every lead, scored by how badly it needs you
+              </h2>
             </Reveal>
-
-            <div className="mt-14 grid sm:grid-cols-3 gap-6">
-              {PROBLEMS.map(({ icon: Icon, title, body }, i) => (
-                <Reveal key={title} delay={i * 70}>
-                  <div className="h-full">
-                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-gray-500" aria-hidden="true" />
-                    </div>
-                    <h3 className="mt-4 font-semibold text-gray-900">{title}</h3>
-                    <p className="mt-2 text-sm text-gray-500 leading-relaxed">{body}</p>
-                  </div>
-                </Reveal>
-              ))}
+            <Reveal delay={100} className="mt-14 sm:mt-20">
+              <figure>
+                <div className="media-zoom overflow-hidden ring-1 ring-white/10">
+                  <img
+                    src="/screenshots/leads.png"
+                    width="1917"
+                    height="970"
+                    alt="The LeadForge leads table: businesses with a quality tag, a score out of 100 and an outreach status, above filters for quality, niche, outreach status and site condition."
+                    className="block w-full"
+                  />
+                </div>
+                <figcaption className="mt-5 flex flex-col justify-between gap-2 text-sm text-white/50 sm:flex-row">
+                  <span>The leads table, from a live account.</span>
+                  <span>Contact details redacted.</span>
+                </figcaption>
+              </figure>
+            </Reveal>
+            <div className="mt-14 flex justify-center">
+              <a href={REGISTER_URL} className="pill pill-on-dark">
+                Start free
+              </a>
             </div>
-
-            {/* The turn: the same fact that makes the middle problem sting is
-                the reason the product scores listings as well as sites. */}
-            <Reveal delay={120}>
-              <p className="mt-14 text-center text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
-                So LeadForge scores the <strong className="text-gray-900 font-semibold">Google listing</strong> too —
-                missing photos, no opening hours, thin reviews — and the ones with a
-                perfectly good website still have an opening worth calling about.
-              </p>
-            </Reveal>
           </div>
         </section>
 
-        {/* ---- How it works ---------------------------------------------- */}
-        <section id="how-it-works" className="scroll-mt-16 py-24 sm:py-32 bg-surface/25 backdrop-blur-md border-y border-white/40 dark:border-white/10">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8">
-            <Reveal>
+        {/* ---- How it works: copy left, carousel bleeding right ----------- */}
+        <section id="how-it-works" className="scroll-mt-20 overflow-hidden bg-surface py-24 sm:py-32">
+          <div className={`${CONTAINER} grid items-center gap-12 lg:grid-cols-12 lg:gap-16`}>
+            <Reveal className="lg:col-span-4">
               <SectionHeading eyebrow="How it works" title="Find. Audit. Pitch.">
-                Three steps, and the third one is already written for you.
+                Three steps, and the third one is already written for you. Every
+                business is found, checked and scored before you ever see its name.
               </SectionHeading>
+              <a href="#pricing" className="pill pill-outline mt-10">
+                See pricing
+              </a>
             </Reveal>
-
-            <div className="relative mt-16 grid sm:grid-cols-3 gap-10 sm:gap-8">
-              <div aria-hidden="true" className="hidden sm:block absolute top-8 left-[16.5%] right-[16.5%] h-px bg-gradient-to-r from-primary-200 via-primary-400 to-primary-200" />
-              {HOW_IT_WORKS.map(({ icon: Icon, step, title, promise, detail }, i) => (
-                <Reveal key={step} delay={i * 80} className="relative text-center sm:text-left">
-                  <div className="relative inline-flex w-16 h-16 rounded-2xl bg-primary-50 items-center justify-center ring-1 ring-primary-100">
-                    <Icon className="w-7 h-7 text-primary-600" aria-hidden="true" />
-                    <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary-600 text-white text-[11px] font-bold flex items-center justify-center ring-4 ring-surface">
-                      {step}
-                    </span>
-                  </div>
-                  <h3 className="mt-5 text-xl font-bold text-gray-900">{title}</h3>
-                  <p className="mt-2 text-gray-700 font-medium leading-snug">{promise}</p>
-                  <p className="mt-2 text-sm text-gray-500 leading-relaxed">{detail}</p>
-                </Reveal>
-              ))}
-            </div>
+            <Reveal delay={100} className="min-w-0 lg:col-span-8">
+              <StepCarousel />
+            </Reveal>
           </div>
         </section>
 
-        {/* ---- Feature grid ------------------------------------------- */}
-        <section id="features" className="scroll-mt-16 py-24 sm:py-32">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8">
+        {/* ---- The problem ----------------------------------------------- */}
+        <section className="bg-gray-50 py-24 sm:py-32">
+          <div className={CONTAINER}>
             <Reveal>
-              <SectionHeading eyebrow="Features" title="Everything between finding and closing">
-                No step of the pipeline is left as manual busywork.
-              </SectionHeading>
+              <SectionHeading eyebrow="The problem" title="Most lead lists go stale before you finish dialling them" />
+            </Reveal>
+            <div className="mt-16 grid gap-12 sm:grid-cols-3 sm:gap-8">
+              {PROBLEMS.map(({ title, body }, i) => (
+                <Reveal key={title} delay={i * 80} className="border-t border-gray-900 pt-6">
+                  <p className="text-5xl font-light text-gray-900 tabular-nums">{String(i + 1).padStart(2, '0')}</p>
+                  <h3 className="mt-8 text-2xl font-light text-gray-900">{title}</h3>
+                  <p className="mt-3 leading-relaxed text-gray-600">{body}</p>
+                </Reveal>
+              ))}
+            </div>
+            <Reveal delay={120}>
+              <p className="mt-20 max-w-3xl text-2xl font-light leading-snug text-gray-900 sm:text-3xl">
+                So LeadForge scores the Google listing too — missing photos, no opening
+                hours, thin reviews — and the ones with a perfectly good website still
+                have an opening worth calling about.
+              </p>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ---- Features: a hairline grid ---------------------------------
+            Cells share one-pixel rules instead of floating as separate cards
+            with shadows, so twelve features read as one considered sheet. */}
+        <section id="features" className="scroll-mt-20 bg-surface py-24 sm:py-32">
+          <div className={CONTAINER}>
+            <Reveal className="grid items-end gap-8 lg:grid-cols-12">
+              <div className="lg:col-span-7">
+                <SectionHeading eyebrow="Features" title="Everything between finding and closing" />
+              </div>
+              <p className="leading-relaxed text-gray-600 lg:col-span-5">
+                No step of the pipeline is left as manual busywork — from sweeping a
+                city for businesses to exporting what you found.
+              </p>
             </Reveal>
 
-            <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-5 [grid-auto-flow:dense]">
+            <div className="mt-16 grid gap-px border border-gray-200 bg-gray-200 [grid-auto-flow:dense] sm:grid-cols-2 lg:grid-cols-3">
               {FEATURES.map(({ icon: Icon, title, body, wide, visual }, i) => (
-                <Reveal key={title} delay={(i % 3) * 70} className={wide ? 'lg:col-span-2' : ''}>
-                  <div className="card card-hover h-full flex flex-col hover:ring-1 hover:ring-primary-500/20">
-                    <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-primary-600" aria-hidden="true" />
-                    </div>
-                    <h3 className="mt-4 font-semibold text-gray-900">{title}</h3>
-                    <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">{body}</p>
-                    {/* The two wide cards are the two features that have real
-                        structure to show - the score's components and the
-                        audit's findings. Describing them in a paragraph while
-                        occupying double the width was the grid promising
-                        weight it didn't deliver. */}
-                    {visual === 'score' && (
-                      <div className="mt-5 space-y-2.5">
-                        {SCORE_COMPONENTS.map((c) => (
-                          <div key={c.label} className="flex items-center gap-3">
-                            <span className="w-16 shrink-0 text-xs font-medium text-gray-600">{c.label}</span>
-                            <span className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                              <span className={`block h-full rounded-full ${c.color}`} style={{ width: c.width }} />
-                            </span>
-                            <span className="w-14 shrink-0 text-right text-[11px] text-gray-400">{c.range}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {visual === 'audit' && (
-                      <div className="mt-5 flex flex-wrap gap-2">
-                        {AUDIT_FINDINGS.map((f) => (
-                          <span
-                            key={f.label}
-                            className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-2 py-1 text-[11px] font-medium text-gray-600"
-                          >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                f.weight === 'Critical'
-                                  ? 'bg-red-500'
-                                  : f.weight === 'Major'
-                                    ? 'bg-amber-500'
-                                    : 'bg-gray-400'
-                              }`}
-                            />
-                            {f.label}
+                <Reveal
+                  key={title}
+                  delay={(i % 3) * 70}
+                  className={`group bg-surface p-8 transition-colors duration-300 hover:bg-gray-50 sm:p-10 ${wide ? 'lg:col-span-2' : ''}`}
+                >
+                  <Icon className="h-6 w-6 text-gray-900" strokeWidth={1.25} aria-hidden="true" />
+                  <h3 className="mt-8 text-2xl font-light text-gray-900">{title}</h3>
+                  <p className="mt-3 leading-relaxed text-gray-600">{body}</p>
+
+                  {visual === 'score' && (
+                    <div className="mt-8 space-y-4">
+                      {SCORE_COMPONENTS.map((c) => (
+                        <div key={c.label} className="flex items-center gap-4">
+                          <span className="w-20 shrink-0 text-sm text-gray-900">{c.label}</span>
+                          <span className="h-1 flex-1 overflow-hidden bg-gray-200">
+                            <span className="block h-full bg-gray-900" style={{ width: c.width }} />
                           </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                          <span className="w-16 shrink-0 text-right text-sm text-gray-500">{c.range}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {visual === 'audit' && (
+                    <div className="mt-8 flex flex-wrap gap-2">
+                      {AUDIT_FINDINGS.map((f) => (
+                        <span
+                          key={f.label}
+                          className="inline-flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1.5 text-sm text-gray-700"
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              f.weight === 'Critical' ? 'bg-gray-900' : f.weight === 'Major' ? 'bg-gray-500' : 'bg-gray-300'
+                            }`}
+                          />
+                          {f.label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </Reveal>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ---- The score, explained ------------------------------------ */}
-        <section className="py-24 sm:py-32 bg-surface/25 backdrop-blur-md border-y border-white/40 dark:border-white/10">
-          <div className="max-w-5xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
-            <Reveal>
-              <SectionHeading eyebrow="Scoring" title="The score isn’t a black box" align="left" />
-              <p className="mt-5 text-gray-500 leading-relaxed">
-                Every lead is scored 0–100 on how badly it needs a website — not
-                on how complete its contact card is. A business with no site at
-                all outscores one with a modern one, because that’s the one
-                worth pitching.
+        {/* ---- Scoring ------------------------------------------------- */}
+        <section className="bg-gray-50 py-24 sm:py-32">
+          <div className={`${CONTAINER} grid items-center gap-12 lg:grid-cols-12 lg:gap-16`}>
+            <Reveal className="lg:col-span-5">
+              <SectionHeading eyebrow="Scoring" title="The score isn’t a black box" />
+              <p className="mt-6 leading-relaxed text-gray-600">
+                Every lead is scored 0–100 on how badly it needs a website — not on how
+                complete its contact card is. A business with no site at all outscores
+                one with a modern one, because that’s the one worth pitching.
               </p>
-              <p className="mt-4 text-gray-500 leading-relaxed">
-                A lead with neither phone nor email is scaled to 55%, since it
-                can’t be reached no matter how badly it needs a site.
+              <p className="mt-4 leading-relaxed text-gray-600">
+                A lead with neither phone nor email is scaled to 55%, since it can’t be
+                reached no matter how badly it needs a site.
               </p>
-              <div className="mt-6 flex flex-wrap items-center gap-3">
+              <div className="mt-8 flex flex-wrap items-center gap-2">
                 <span className="badge-high">70+ High</span>
                 <span className="badge-medium">45+ Medium</span>
                 <span className="badge-low">Below 45 Low</span>
               </div>
             </Reveal>
-
-            <Reveal delay={100}>
+            <Reveal delay={100} className="lg:col-span-7">
               <ScoreCalculator />
             </Reveal>
           </div>
         </section>
 
-        {/* ---- Evidence-driven outreach --------------------------------- */}
-        <section className="py-24 sm:py-32">
-          <div className="max-w-5xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
-            <Reveal className="order-2 lg:order-1 flex justify-center">
-              <div className="w-56 rounded-[2rem] border-[6px] border-slate-800 bg-slate-800 shadow-xl overflow-hidden">
-                <div className="bg-white h-96 overflow-hidden relative">
-                  <div className="h-20 bg-slate-700 flex items-center justify-center">
-                    <span className="text-white text-xl font-bold">ALVAREZ AUTO</span>
-                  </div>
-                  <div className="p-2 space-y-2">
-                    <div className="h-24 bg-slate-200 w-full" />
-                    <div className="h-3 bg-slate-200 w-5/6" />
-                    <div className="h-3 bg-slate-200 w-full" />
-                    <div className="h-3 bg-slate-200 w-2/3" />
-                    <div className="flex gap-1 mt-2">
-                      <div className="h-16 w-1/3 bg-slate-100 border border-slate-200" />
-                      <div className="h-16 w-1/3 bg-slate-100 border border-slate-200" />
-                      <div className="h-16 w-1/3 bg-slate-100 border border-slate-200" />
-                    </div>
-                  </div>
-                  <span className="absolute bottom-2 inset-x-2 text-center text-[10px] text-slate-400">
-                    no viewport tag — desktop layout squeezed onto a phone
-                  </span>
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal delay={80} className="order-1 lg:order-2">
-              <SectionHeading eyebrow="Outreach" title="The message names the actual problem" align="left" />
-              <p className="mt-5 text-gray-500 leading-relaxed">
-                Outreach opens with the specific fault the audit found, not a
-                generic pitch. Sixteen hooks, chosen by the heaviest finding,
-                written in second person for WhatsApp and third for email.
+        {/* ---- Outreach: copy left, media bleeding right --------------- */}
+        <section className="overflow-hidden bg-surface py-24 sm:py-32">
+          <div className={`${CONTAINER} grid items-center gap-12 lg:grid-cols-12 lg:gap-16`}>
+            <Reveal className="lg:col-span-5">
+              <SectionHeading eyebrow="Outreach" title="The message names the actual problem" />
+              <p className="mt-6 leading-relaxed text-gray-600">
+                Outreach opens with the specific fault the audit found, not a generic
+                pitch. Sixteen hooks, chosen by the heaviest finding, written in second
+                person for WhatsApp and third for email.
               </p>
-              <div className="mt-6 rounded-2xl bg-emerald-50 border border-emerald-100 p-4 max-w-sm">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
-                  <span className="text-xs font-semibold text-emerald-700">WhatsApp</span>
-                </div>
-                <p className="text-sm text-emerald-900 leading-snug">
-                  Hi Alvarez Auto — I had a look at your website on my phone and
-                  it isn’t mobile-friendly. I fix exactly this for shops like
-                  yours — want to see what it’d look like fixed?
+              <blockquote className="mt-10 border-l border-gray-900 pl-6">
+                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">
+                  <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
+                  WhatsApp draft
                 </p>
+                <p className="mt-4 text-xl font-light leading-snug text-gray-900 sm:text-2xl">
+                  “Hi Alvarez Auto — I had a look at your website on my phone and it
+                  isn’t mobile-friendly. Want to see what it’d look like fixed?”
+                </p>
+              </blockquote>
+              <p className="mt-6 text-sm text-gray-500">A site with nothing wrong gets no invented complaint.</p>
+            </Reveal>
+            <Reveal delay={100} className="lg:col-span-7 lg:-mr-10">
+              <div className="media-zoom overflow-hidden bg-gray-100">
+                <img
+                  src="/screenshots/dashboard.png"
+                  width="1917"
+                  height="970"
+                  loading="lazy"
+                  alt="The LeadForge dashboard: total leads, usable leads, a lead-quality breakdown and the outreach pipeline."
+                  className="block w-full"
+                />
               </div>
-              <p className="mt-4 text-sm text-gray-400">
-                A site with nothing wrong gets no invented complaint.
-              </p>
             </Reveal>
           </div>
         </section>
 
-        {/* ---- Proposal --------------------------------------------------- */}
-        <section className="py-24 sm:py-32 bg-surface/25 backdrop-blur-md border-y border-white/40 dark:border-white/10">
-          <div className="max-w-4xl mx-auto px-5 sm:px-8">
-            <Reveal className="mb-14">
+        {/* ---- Proposals: builder left, copy right -------------------- */}
+        <section className="bg-gray-50 py-24 sm:py-32">
+          <div className={`${CONTAINER} grid items-center gap-12 lg:grid-cols-12 lg:gap-16`}>
+            <Reveal className="lg:order-2 lg:col-span-5">
               <SectionHeading eyebrow="Proposals" title="A priced proposal, not just a lead">
-                One click turns an audit into a shareable, priced pitch —
-                public link, no login required for the person reading it.
+                One click turns an audit into a shareable, priced pitch — a public
+                link, with no login required for the person reading it.
               </SectionHeading>
+              <p className="mt-6 text-sm text-gray-500">Every price is a starting point — all of it is editable.</p>
             </Reveal>
-
-            <Reveal delay={100}>
+            <Reveal delay={100} className="lg:order-1 lg:col-span-7">
               <ProposalBuilder />
             </Reveal>
-            <p className="text-center mt-5 text-sm text-gray-400">
-              Every price is a starting point — all of it is editable.
-            </p>
           </div>
         </section>
 
         {/* ---- Trust ---------------------------------------------------
-            Deliberately facts rather than logos or testimonials: the page
-            has no customers it can name, and inventing some is the fastest
-            way to lose the trust it is trying to earn. What it can say is
-            who pays Google, who holds the data, and how to leave. */}
-        <section className="py-24 sm:py-32">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8">
+            Facts rather than logos or testimonials: the page has no
+            customers it can name, and inventing some is the fastest way to
+            lose the trust it is trying to earn. */}
+        <section className="bg-surface py-24 sm:py-32">
+          <div className={CONTAINER}>
             <Reveal>
               <SectionHeading eyebrow="Before you sign up" title="The boring questions, answered up front">
-                What it costs to run, who holds your data, and how you get it
-                back out.
+                What it costs to run, who holds your data, and how you get it back out.
               </SectionHeading>
             </Reveal>
-
-            <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="mt-16 grid gap-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
               {TRUST.map(({ icon: Icon, title, body }, i) => (
-                <Reveal key={title} delay={(i % 4) * 60}>
-                  <div className="card card-hover h-full">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-emerald-600" aria-hidden="true" />
-                    </div>
-                    <h3 className="mt-4 font-semibold text-gray-900">{title}</h3>
-                    <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">{body}</p>
-                  </div>
+                <Reveal
+                  key={title}
+                  delay={(i % 4) * 60}
+                  className="border-t border-gray-200 pt-8 transition-colors duration-300 hover:border-gray-900"
+                >
+                  <Icon className="h-6 w-6 text-gray-900" strokeWidth={1.25} aria-hidden="true" />
+                  <h3 className="mt-8 text-xl font-light text-gray-900">{title}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-gray-600">{body}</p>
                 </Reveal>
               ))}
             </div>
@@ -1013,51 +1057,46 @@ export default function Landing() {
         </section>
 
         {/* ---- Pricing ------------------------------------------------ */}
-        <section id="pricing" className="scroll-mt-16 py-24 sm:py-32 bg-surface/25 backdrop-blur-md border-y border-white/40 dark:border-white/10">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8">
-            <Reveal>
-              <SectionHeading eyebrow="Pricing" title="Simple pricing, upgrade when you outgrow free">
-                Payment runs through Razorpay or a UPI QR — only the method
-                actually configured on your account is ever shown.
-              </SectionHeading>
+        <section id="pricing" className="scroll-mt-20 bg-gray-50 py-24 sm:py-32">
+          <div className={CONTAINER}>
+            <Reveal className="grid items-end gap-8 lg:grid-cols-12">
+              <div className="lg:col-span-7">
+                <SectionHeading eyebrow="Pricing" title="Simple pricing, upgrade when you outgrow free" />
+              </div>
+              <p className="leading-relaxed text-gray-600 lg:col-span-5">
+                Payment runs through Razorpay or a UPI QR — only the method actually
+                configured on your account is ever shown.
+              </p>
             </Reveal>
 
-            <div className="mt-14 grid md:grid-cols-3 gap-6 items-start">
-              {PLANS.map(({ id, name, price, icon: Icon, popular, description, features, cta }, i) => (
-                <Reveal key={id} delay={i * 80}>
-                  <div className={`relative card card-hover h-full flex flex-col ${popular ? "ring-2 ring-primary-500 shadow-lift" : ""}`}>
-                    {popular && (
-                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-button">
-                        Most popular
+            <div className="mt-16 grid gap-6 md:grid-cols-3">
+              {PLANS.map(({ id, name, price, popular, description, features, cta }, i) => (
+                <Reveal key={id} delay={i * 80} className="h-full">
+                  <div
+                    className={`flex h-full flex-col border bg-surface p-8 transition-colors duration-300 sm:p-10 ${
+                      popular ? 'border-gray-900' : 'border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="flex items-baseline justify-between gap-4">
+                      <h3 className="text-2xl font-light text-gray-900">{name}</h3>
+                      {popular && <span className="eyebrow text-[11px]">Most popular</span>}
+                    </div>
+                    <p className="mt-2 text-sm text-gray-600">{description}</p>
+                    <p className="mt-10 flex items-baseline gap-1.5">
+                      <span className="text-6xl font-light tracking-[-0.03em] text-gray-900 tabular-nums">
+                        {price === 0 ? 'Free' : `$${price}`}
                       </span>
-                    )}
-                    <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-primary-600" aria-hidden="true" />
-                    </div>
-                    <h3 className="mt-4 text-xl font-bold text-gray-900">{name}</h3>
-                    <p className="text-sm text-gray-500 mt-1">{description}</p>
-                    <div className="mt-4">
-                      {price === 0 ? (
-                        <span className="text-3xl font-bold text-gray-900">Free</span>
-                      ) : (
-                        <>
-                          <span className="text-3xl font-bold text-gray-900">${price}</span>
-                          <span className="text-gray-500 text-sm">/month</span>
-                        </>
-                      )}
-                    </div>
-                    <ul className="mt-5 space-y-2.5 flex-1">
+                      {price !== 0 && <span className="text-sm text-gray-500">/month</span>}
+                    </p>
+                    <ul className="mt-10 flex-1 space-y-3 border-t border-gray-200 pt-8">
                       {features.map((f) => (
-                        <li key={f} className="flex items-start gap-2 text-sm text-gray-600">
-                          <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
+                        <li key={f} className="flex items-start gap-3 text-[15px] text-gray-700">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-gray-900" strokeWidth={1.5} aria-hidden="true" />
                           {f}
                         </li>
                       ))}
                     </ul>
-                    <a
-                      href={REGISTER_URL}
-                      className={`mt-6 text-center ${popular ? 'btn-primary' : 'btn-secondary'}`}
-                    >
+                    <a href={REGISTER_URL} className={`pill mt-10 w-full ${popular ? 'pill-solid' : 'pill-outline'}`}>
                       {cta}
                     </a>
                   </div>
@@ -1067,106 +1106,144 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ---- FAQ ------------------------------------------------------- */}
-        <section id="faq" className="scroll-mt-16 py-24 sm:py-32">
-          <div className="max-w-3xl mx-auto px-5 sm:px-8">
-            <Reveal className="mb-14">
+        {/* ---- FAQ: heading left, ruled list right ----------------------- */}
+        <section id="faq" className="scroll-mt-20 bg-surface py-24 sm:py-32">
+          <div className={`${CONTAINER} grid gap-12 lg:grid-cols-12 lg:gap-16`}>
+            <Reveal className="lg:col-span-4">
               <SectionHeading eyebrow="FAQ" title="Questions people ask first" />
+              <p className="mt-6 leading-relaxed text-gray-600">
+                Something not covered here? The free plan needs no card, so the fastest
+                answer is usually ten minutes in the product.
+              </p>
+              <a href={REGISTER_URL} className="pill pill-outline mt-10">
+                Start free
+              </a>
             </Reveal>
-            <div className="space-y-3">
+            <div className="border-b border-gray-200 lg:col-span-8">
               {FAQS.map(({ q, a }, i) => (
                 <Reveal key={q} delay={i * 40}>
-                  <details className="group card card-hover cursor-pointer [&::-webkit-details-marker]:hidden">
-                    <summary className="flex items-center justify-between gap-4 font-medium text-gray-900 list-none">
+                  <details className="group border-t border-gray-200">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 text-lg font-light text-gray-900 transition-colors hover:text-gray-600 sm:text-xl [&::-webkit-details-marker]:hidden">
                       {q}
-                      <ChevronDown className="w-4 h-4 text-gray-400 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+                      <Plus
+                        className="h-5 w-5 shrink-0 transition-transform duration-300 group-open:rotate-45"
+                        strokeWidth={1.25}
+                        aria-hidden="true"
+                      />
                     </summary>
-                    <p className="mt-3 text-sm text-gray-500 leading-relaxed">{a}</p>
+                    <p className="-mt-2 pb-7 pr-12 leading-relaxed text-gray-600">{a}</p>
                   </details>
                 </Reveal>
               ))}
             </div>
-            <Reveal delay={120}>
-              <p className="mt-10 text-center text-sm text-gray-400">
-                Something not covered here?{' '}
-                <a href={REGISTER_URL} className="text-primary-600 font-medium hover:underline">
-                  Start free and find out in ten minutes
-                </a>{' '}
-                — the free plan needs no card.
-              </p>
+          </div>
+        </section>
+
+        {/* ---- Closing panel: a black split inside the page gutters ------ */}
+        <section className="bg-surface pb-24 sm:pb-32">
+          <div className={CONTAINER}>
+            <Reveal>
+              <div className="grid overflow-hidden bg-black text-white lg:grid-cols-2">
+                <div className="flex flex-col justify-center p-8 sm:p-14 lg:p-20">
+                  <p className="eyebrow text-white/80">Start today</p>
+                  <h2 className="mt-4 text-4xl font-light leading-[1.05] tracking-[-0.02em] text-white sm:text-5xl">
+                    Find the businesses that actually need you
+                  </h2>
+                  <p className="mt-6 max-w-md leading-relaxed text-white/70">
+                    200 leads on the free plan. No card required, and everything you find
+                    exports to CSV or JSON.
+                  </p>
+                  <div className="mt-10 flex flex-wrap gap-3">
+                    <a href={REGISTER_URL} className="pill pill-solid-on-dark">Start free</a>
+                    <a href={LOGIN_URL} className="pill pill-on-dark">Log in</a>
+                  </div>
+                </div>
+                <div className="media-zoom relative min-h-[18rem] overflow-hidden lg:min-h-[34rem]">
+                  <img
+                    src="/screenshots/dashboard.png"
+                    alt=""
+                    aria-hidden="true"
+                    width="1917"
+                    height="970"
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover object-[100%_0%]"
+                  />
+                </div>
+              </div>
             </Reveal>
           </div>
         </section>
-
-        {/* ---- Final CTA -------------------------------------------------- */}
-        <section className="relative overflow-hidden bg-[#080c1a] bg-gradient-to-br from-[#0b1122] via-[#111a35] to-[#0a0f1e] py-24 sm:py-32">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-            <div className="absolute -top-24 left-1/3 w-[28rem] h-[28rem] rounded-full bg-[#4a5ae8]/20 blur-[100px]" />
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          </div>
-          <Reveal className="relative max-w-2xl mx-auto px-5 sm:px-8 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">Find the businesses that actually need you</h2>
-            <p className="mt-4 text-white/70">200 leads, free, no card required.</p>
-            <a href={REGISTER_URL} className="btn-primary mt-8 px-6 py-3 text-base">
-              Start free
-              <ArrowRight className="w-4 h-4" aria-hidden="true" />
-            </a>
-            <p className="mt-6 text-xs text-white/40">Built for freelancers and small agencies.</p>
-          </Reveal>
-        </section>
       </main>
 
-      <footer className="border-t border-white/40 dark:border-white/10 bg-surface/25 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14">
-          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="lg:col-span-2 max-w-sm">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-button">
-                  <Zap className="w-4 h-4 text-white" aria-hidden="true" />
-                </div>
-                <span className="text-lg font-bold text-gray-900 tracking-tight">LeadForge</span>
-              </div>
-              <p className="mt-4 text-sm text-gray-500 leading-relaxed">
-                A client-finding tool for freelancers and small web agencies.
-                Finds local businesses whose sites are broken, dated or
-                missing, proves it, and writes the first message.
+      <footer className="bg-black text-white">
+        <div className={`${CONTAINER} pb-10 pt-16`}>
+          <div className="flex flex-col justify-between gap-8 border-b border-white/15 pb-12 sm:flex-row sm:items-center">
+            <a href="#top" aria-label="LeadForge home">
+              <Logo />
+            </a>
+            <div className="flex items-center gap-6">
+              <p className="eyebrow text-white">Ready when you are</p>
+              <a href={REGISTER_URL} className="pill pill-solid-on-dark px-6 py-3 text-sm">Start free</a>
+            </div>
+          </div>
+
+          <div className="grid gap-12 pt-12 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="max-w-sm lg:col-span-2">
+              <p className="eyebrow text-white">About</p>
+              <p className="mt-5 text-sm leading-relaxed text-white/60">
+                A client-finding tool for freelancers and small web agencies. It finds
+                local businesses whose sites are broken, dated or missing, proves it,
+                and writes the first message.
               </p>
-              <a
-                href="https://github.com/7umer/leadforge"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="mt-5 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
-              >
-                <Github className="w-4 h-4" aria-hidden="true" />
-                Source on GitHub
-              </a>
             </div>
 
             <nav aria-label="Product">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Product</h2>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                <li><a href="#how-it-works" className="text-gray-500 hover:text-gray-900 transition-colors">How it works</a></li>
-                <li><a href="#features" className="text-gray-500 hover:text-gray-900 transition-colors">Features</a></li>
-                <li><a href="#pricing" className="text-gray-500 hover:text-gray-900 transition-colors">Pricing</a></li>
-                <li><a href="#faq" className="text-gray-500 hover:text-gray-900 transition-colors">FAQ</a></li>
+              <h2 className="eyebrow text-white" style={{ letterSpacing: '0.08em' }}>Product</h2>
+              <ul className="mt-5 space-y-3 text-sm">
+                {NAV_LINKS.map((l) => (
+                  <li key={l.href}>
+                    <a href={l.href} className="group inline-flex items-center gap-2 text-white/60 transition-colors hover:text-white">
+                      {l.label}
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={1.5} aria-hidden="true" />
+                    </a>
+                  </li>
+                ))}
               </ul>
             </nav>
 
             <nav aria-label="Account">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Get started</h2>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                <li><a href={REGISTER_URL} className="text-gray-500 hover:text-gray-900 transition-colors">Create an account</a></li>
-                <li><a href={LOGIN_URL} className="text-gray-500 hover:text-gray-900 transition-colors">Log in</a></li>
+              <h2 className="eyebrow text-white" style={{ letterSpacing: '0.08em' }}>Get started</h2>
+              <ul className="mt-5 space-y-3 text-sm">
+                <li>
+                  <a href={REGISTER_URL} className="group inline-flex items-center gap-2 text-white/60 transition-colors hover:text-white">
+                    Create an account
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={1.5} aria-hidden="true" />
+                  </a>
+                </li>
+                <li>
+                  <a href={LOGIN_URL} className="group inline-flex items-center gap-2 text-white/60 transition-colors hover:text-white">
+                    Log in
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={1.5} aria-hidden="true" />
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/7umer/leadforge"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="inline-flex items-center gap-2 text-white/60 transition-colors hover:text-white"
+                  >
+                    <Github className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
+                    Source on GitHub
+                  </a>
+                </li>
               </ul>
-              <p className="mt-4 text-xs text-gray-400 leading-relaxed">
-                Free plan: 200 leads, no card.
-              </p>
             </nav>
           </div>
 
-          <div className="mt-12 pt-6 border-t border-gray-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-gray-400">&copy; {new Date().getFullYear()} LeadForge</p>
-            <p className="text-xs text-gray-400">Built for freelancers and small agencies.</p>
+          <div className="mt-16 flex flex-col justify-between gap-3 text-xs text-white/40 sm:flex-row">
+            <p>&copy; {new Date().getFullYear()} LeadForge</p>
+            <p>Built for freelancers and small agencies.</p>
           </div>
         </div>
       </footer>

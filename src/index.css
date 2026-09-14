@@ -1,23 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Design tokens copied verbatim from the LeadForge app's index.css so this
-   standalone page renders as the same product, not a lookalike. */
+/* ---- Editorial monochrome ---------------------------------------------
+   The page follows an architectural-brochure design language: one grotesk
+   carried mostly at weight 300, tiny bold uppercase eyebrows, hairline pill
+   buttons, and a palette of white, one light grey and black. Colour is
+   allowed to come from media only - no gradients, glows or glass - so
+   everything that is not a screenshot stays quiet enough for the product
+   to be the thing that is looked at.
+
+   Neutral greys rather than the app's slate: a blue cast in the greys reads
+   as "software UI", where this page wants to read as print. The ramp still
+   inverts in dark mode, so every bg-gray-50 / text-gray-900 stays correct in
+   both themes without being touched. */
 @layer base {
   :root {
-    --c-gray-50:  248 250 252;
-    --c-gray-100: 241 245 249;
-    --c-gray-200: 230 235 242;
-    --c-gray-300: 207 216 227;
-    --c-gray-400: 124 138 160;
-    --c-gray-500: 100 116 139;
-    --c-gray-600: 71 85 105;
-    --c-gray-700: 51 65 85;
-    --c-gray-800: 30 41 59;
-    --c-gray-900: 15 23 42;
+    --c-gray-50:  246 246 246;
+    --c-gray-100: 238 238 238;
+    --c-gray-200: 224 224 224;
+    --c-gray-300: 200 200 200;
+    /* 115, not Tailwind's lighter 400: small metadata still clears 4.5:1 on
+       white, which the usual pale grey does not. */
+    --c-gray-400: 115 115 115;
+    --c-gray-500: 102 102 102;
+    --c-gray-600: 77 77 77;
+    --c-gray-700: 56 56 56;
+    --c-gray-800: 30 30 30;
+    --c-gray-900: 10 10 10;
 
     --c-surface: 255 255 255;
 
@@ -29,18 +41,18 @@
   }
 
   .dark {
-    --c-gray-50:  11 17 32;
-    --c-gray-100: 17 24 41;
-    --c-gray-200: 39 51 74;
-    --c-gray-300: 55 68 92;
-    --c-gray-400: 118 133 156;
-    --c-gray-500: 148 163 184;
-    --c-gray-600: 176 189 207;
-    --c-gray-700: 203 214 230;
-    --c-gray-800: 226 234 245;
-    --c-gray-900: 241 246 253;
+    --c-gray-50:  14 14 14;
+    --c-gray-100: 24 24 24;
+    --c-gray-200: 44 44 44;
+    --c-gray-300: 66 66 66;
+    --c-gray-400: 150 150 150;
+    --c-gray-500: 168 168 168;
+    --c-gray-600: 192 192 192;
+    --c-gray-700: 214 214 214;
+    --c-gray-800: 234 234 234;
+    --c-gray-900: 250 250 250;
 
-    --c-surface: 25 34 54;
+    --c-surface: 6 6 6;
 
     --c-primary-50:  35 44 82;
     --c-primary-100: 44 55 100;
@@ -62,209 +74,114 @@
       transform: none !important;
       transition: none !important;
     }
-  }
-
-  /* ---- Glass ---------------------------------------------------------
-     Frosted glass is only frosted if there is something behind it to
-     blur. On a flat grey page `backdrop-filter` renders an expensive
-     no-op, so the page itself carries three fixed colour washes; every
-     translucent surface above them is what turns those washes into the
-     depth the theme is after.
-
-     The tint is a variable rather than a fixed rgba because glass in a
-     light theme is white held back to ~60%, and in a dark one it is a
-     lifted slate - inverting the alpha alone would make dark cards
-     glow. */
-  :root {
-    --glass-tint: 255 255 255;
-    --glass-alpha: 0.62;
-    --glass-edge: 255 255 255;
-    --glass-edge-alpha: 0.7;
-    --glass-ring: 15 23 42;
-    --glass-ring-alpha: 0.06;
-  }
-
-  .dark {
-    --glass-tint: 33 45 71;
-    --glass-alpha: 0.55;
-    --glass-edge: 255 255 255;
-    --glass-edge-alpha: 0.1;
-    --glass-ring: 0 0 0;
-    --glass-ring-alpha: 0.3;
+    .scroll-cue { animation: none !important; }
+    .media-zoom img { transition: none !important; }
+    .media-zoom:hover img { transform: none !important; }
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 font-sans;
+    @apply bg-surface text-gray-900 font-sans;
+    font-weight: 400;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 
-  /* The washes live on their own fixed layer rather than as a
-     `background-attachment: fixed` on the body. Same look, but a fixed
-     background attachment re-rasterises the gradient on every scroll
-     frame, and doing that under two dozen backdrop-filters is how a
-     glass theme ends up janking on a phone. As an element it is
-     promoted to its own compositor layer once and then simply stays
-     put. */
-  /* A mesh of overlapping washes rather than three faint ones: glass can
-     only show what is behind it, so a nearly-white backdrop makes an
-     expensive blur look like a plain grey card. Five colours, placed to
-     leave a lighter channel down the middle where the body copy runs, so
-     the page reads as coloured without text ever sitting on the
-     strongest part of a wash. */
-  .ambient {
-    background-image:
-      radial-gradient(38rem 32rem at 8% 2%, rgb(74 90 232 / 0.30), transparent 60%),
-      radial-gradient(34rem 30rem at 96% 14%, rgb(124 58 237 / 0.26), transparent 60%),
-      radial-gradient(32rem 28rem at 82% 62%, rgb(236 72 153 / 0.16), transparent 60%),
-      radial-gradient(36rem 30rem at 4% 58%, rgb(14 165 233 / 0.22), transparent 60%),
-      radial-gradient(40rem 34rem at 50% 104%, rgb(99 102 241 / 0.24), transparent 60%);
-  }
-
-  .dark .ambient {
-    background-image:
-      radial-gradient(38rem 32rem at 8% 2%, rgb(99 116 255 / 0.30), transparent 60%),
-      radial-gradient(34rem 30rem at 96% 14%, rgb(139 92 246 / 0.26), transparent 60%),
-      radial-gradient(32rem 28rem at 82% 62%, rgb(236 72 153 / 0.16), transparent 60%),
-      radial-gradient(36rem 30rem at 4% 58%, rgb(14 165 233 / 0.20), transparent 60%),
-      radial-gradient(40rem 34rem at 50% 104%, rgb(99 102 241 / 0.24), transparent 60%);
-  }
-
-  /* Grain. Real frosted glass scatters light rather than transmitting it
-     perfectly, and a perfectly smooth gradient underneath is the thing
-     that gives a CSS glass theme away as flat colour. Kept low enough to
-     be felt rather than seen, and generated rather than downloaded. */
-  .ambient::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0.035;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-
-  .dark .ambient::after {
-    opacity: 0.05;
-  }
-
   h1, h2, h3 {
-    @apply tracking-tight text-gray-900;
+    font-weight: 300;
+    letter-spacing: -0.02em;
   }
 
+  /* currentColor rather than a fixed ring colour: half this page is black
+     and half is white, and a focus ring that is visible on one is invisible
+     on the other. Following the text colour is always visible. */
   :focus-visible {
-    @apply outline-none ring-2 ring-primary-500/40 ring-offset-2 rounded;
-    --tw-ring-offset-color: rgb(var(--c-gray-100));
+    outline: 1.5px solid currentColor;
+    outline-offset: 4px;
   }
 
   ::selection {
-    @apply bg-primary-100 text-primary-900;
-  }
-
-  .dark ::selection {
-    @apply bg-primary-100 text-gray-900;
+    background-color: rgb(var(--c-gray-900));
+    color: rgb(var(--c-surface));
   }
 }
 
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-primary-600 text-white
-           px-4 py-2 rounded-lg font-medium shadow-button
-           hover:bg-primary-700 active:scale-[0.98]
-           disabled:opacity-50 disabled:pointer-events-none
-           transition-all duration-150;
-  }
-  .dark .btn-primary:hover { background-color: #3037a4; }
-  .dark .btn-primary { color: #fff; }
-
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 text-gray-700
-           px-4 py-2 rounded-lg font-medium shadow-button
-           hover:text-gray-900
-           active:scale-[0.98]
-           disabled:opacity-50 disabled:pointer-events-none
-           transition-all duration-150;
-    background-color: rgb(var(--glass-tint) / var(--glass-alpha));
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
-    backdrop-filter: blur(12px) saturate(160%);
-    border: 1px solid rgb(var(--glass-edge) / var(--glass-edge-alpha));
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.08em] text-gray-900;
   }
 
-  .btn-secondary:hover {
-    background-color: rgb(var(--glass-tint) / calc(var(--glass-alpha) + 0.18));
+  /* ---- Pills ----------------------------------------------------------
+     The one button shape on the page: fully rounded, hairline border,
+     generous padding, sentence case. Four variants because the page has two
+     grounds (theme surface, and always-black media sections) and each needs
+     an outline and a filled version. Hover swaps fill and outline rather
+     than shading, so it reads the same on black as on white. */
+  .pill {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border
+           px-8 py-[1.125rem] text-[15px] leading-none whitespace-nowrap
+           transition-colors duration-300 active:scale-[0.98];
   }
 
-  /* One definition, so every card, panel and accordion on the page turns
-     to glass together rather than a few of them looking like leftovers.
-     The two borders do different jobs: the light top edge is the
-     highlight a real pane catches, the dark ring is the shadow it casts
-     into its own edge - without both it reads as flat translucency. */
-  .glass, .card {
-    background-color: rgb(var(--glass-tint) / var(--glass-alpha));
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-    backdrop-filter: blur(16px) saturate(160%);
-    border: 1px solid rgb(var(--glass-edge) / var(--glass-edge-alpha));
-    box-shadow:
-      0 1px 0 0 rgb(255 255 255 / 0.25) inset,
-      0 8px 24px -12px rgb(var(--glass-ring) / var(--glass-ring-alpha)),
-      0 2px 6px -2px rgb(var(--glass-ring) / var(--glass-ring-alpha));
+  .pill-outline {
+    @apply border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-surface;
   }
 
-  .card {
-    @apply rounded-xl p-6;
+  .pill-solid {
+    @apply border-gray-900 bg-gray-900 text-surface hover:bg-transparent hover:text-gray-900;
   }
 
-  /* Glass has no solid surface to darken on hover, so it lifts by getting
-     less transparent - more pane, less window - rather than by changing
-     colour. */
-  .card-hover {
-    @apply transition-all duration-200;
+  .pill-on-dark {
+    @apply border-white/80 text-white hover:border-white hover:bg-white hover:text-black;
   }
 
-  .card-hover:hover {
-    background-color: rgb(var(--glass-tint) / calc(var(--glass-alpha) + 0.16));
-    border-color: rgb(var(--glass-edge) / calc(var(--glass-edge-alpha) + 0.15));
-    box-shadow:
-      0 1px 0 0 rgb(255 255 255 / 0.35) inset,
-      0 14px 32px -14px rgb(var(--glass-ring) / calc(var(--glass-ring-alpha) + 0.05));
+  .pill-solid-on-dark {
+    @apply border-white bg-white text-black hover:bg-transparent hover:text-white;
   }
 
+  /* Score tags in black, outline and grey rather than green/amber/grey:
+     the order High > Medium > Low is carried by weight of ink, which keeps
+     it legible without introducing colours the rest of the page never uses. */
   .badge-high {
-    @apply inline-flex items-center bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20
-           px-2 py-0.5 rounded-md text-xs font-medium;
+    @apply inline-flex items-center rounded-full border border-gray-900 bg-gray-900 text-surface
+           px-2.5 py-0.5 text-xs font-medium tabular-nums;
   }
 
   .badge-medium {
-    @apply inline-flex items-center bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20
-           px-2 py-0.5 rounded-md text-xs font-medium;
+    @apply inline-flex items-center rounded-full border border-gray-900 text-gray-900
+           px-2.5 py-0.5 text-xs font-medium tabular-nums;
   }
 
   .badge-low {
-    @apply inline-flex items-center bg-gray-100 text-gray-600 ring-1 ring-inset ring-gray-500/20
-           px-2 py-0.5 rounded-md text-xs font-medium;
+    @apply inline-flex items-center rounded-full border border-gray-300 text-gray-500
+           px-2.5 py-0.5 text-xs font-medium tabular-nums;
+  }
+
+  /* Media eases in by a few percent on hover, slowly - the way an image on
+     a brochure site responds - instead of cards lifting on shadows. */
+  .media-zoom img {
+    transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .media-zoom:hover img {
+    transform: scale(1.03);
   }
 }
 
 @layer utilities {
-  /* ---- Dark-mode repairs --------------------------------------------
-     Everything built on the grey/primary ramps inverts on its own. What
-     follows is the set that cannot, because it names a fixed colour: a
-     `-50` tint is a near-white wash, which on a dark card stops being a
-     subtle background and becomes a glowing patch. Each one becomes a
-     dark tint of the same hue, with its text end lifted to stay legible
-     against it. */
-  .dark .bg-white { background-color: rgb(var(--c-surface)); }
-  .dark .text-primary-600, .dark .text-primary-500 { color: rgb(160 178 252); }
-  .dark .text-primary-800, .dark .text-primary-900 { color: rgb(196 208 253); }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
 
-  .dark .bg-emerald-50 { background-color: rgb(6 46 34); }
-  .dark .border-emerald-100 { border-color: rgb(6 78 59); }
-  .dark .text-emerald-600, .dark .text-emerald-700 { color: rgb(110 231 183); }
-  .dark .text-emerald-900 { color: rgb(209 250 229); }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 
-  .dark .bg-amber-50 { background-color: rgb(69 39 6); }
-  .dark .text-amber-700 { color: rgb(252 211 77); }
+  .scroll-cue {
+    animation: scroll-cue 1.8s ease-in-out infinite;
+  }
+}
 
-  /* The badges take their colours through @apply, so they carry no
-     `bg-emerald-50` class for the rules above to catch - they need
-     repairing by their own name. */
-  .dark .badge-high { background-color: rgb(6 46 34); color: rgb(110 231 183); }
-  .dark .badge-medium { background-color: rgb(69 39 6); color: rgb(252 211 77); }
+@keyframes scroll-cue {
+  0% { transform: translateY(0); opacity: 1; }
+  70% { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 0; }
 }

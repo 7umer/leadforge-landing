@@ -38,7 +38,9 @@ export default {
         surface: 'rgb(var(--c-surface) / <alpha-value>)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto',
+        // Inter Tight for its narrower, more editorial set at light weights -
+        // plain Inter at 300 reads as UI text, this reads as a headline.
+        sans: ['"Inter Tight"', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto',
                'Helvetica Neue', 'Arial', 'sans-serif'],
       },
       boxShadow: {
