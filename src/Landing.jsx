@@ -1413,14 +1413,14 @@ export default function Landing() {
                     <a href={LOGIN_URL} className="pill pill-on-dark">Log in</a>
                   </div>
                 </div>
-                <div className="relative overflow-hidden bg-[#0f1117] flex items-center justify-center p-4 sm:p-6 lg:p-8">
+                <div className="overflow-hidden flex items-center">
                   <img
                     src="/screenshots/tour_leads_table.png"
                     alt="LeadForge leads table with urgency scores and 1-click actions"
                     width="1024"
                     height="516"
                     loading="lazy"
-                    className="block w-full rounded-xl ring-1 ring-white/10"
+                    className="block w-full"
                   />
                 </div>
               </div>
