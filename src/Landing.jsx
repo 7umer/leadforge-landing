@@ -1421,7 +1421,7 @@ export default function Landing() {
                     width="1024"
                     height="516"
                     loading="lazy"
-                    className="absolute inset-0 h-full w-full object-cover object-[100%_0%]"
+                    className="absolute inset-0 h-full w-full object-cover object-center"
                   />
                 </div>
               </div>
