@@ -227,21 +227,60 @@ const SCORE_COMPONENTS = [
 
 const PLANS = [
   {
-    id: 'free', name: 'Starter', price: 0, icon: Gift,
-    description: 'Get started for free. No card needed.',
-    features: ['200 leads max', '4 niches', 'CSV & JSON import', 'Lead scoring & cleaning', 'Template outreach messages', 'Export CSV & JSON'],
+    id: 'free',
+    name: 'Starter',
+    price: 0,
+    priceDisplay: 'Free',
+    usdDisplay: '$0',
+    icon: Gift,
+    description: 'Get started for free. Includes 7-Day Pro trial on signup.',
+    features: [
+      '100 leads saved',
+      '10 daily WhatsApp outreach queue',
+      '3 client proposals lifetime',
+      'Full website technical audit',
+      'Need-based opportunity scoring (0–100)',
+      'CSV & Excel lead import & export',
+    ],
     cta: 'Start free',
   },
   {
-    id: 'pro', name: 'Pro', price: 19, icon: Zap, popular: true,
-    description: 'For freelancers hunting clients daily.',
-    features: ['2,000 leads', 'All 10 niches + custom', 'AI-powered message generator', 'Bulk actions', 'Outreach pipeline tracker', 'Priority email support'],
+    id: 'pro',
+    name: 'Pro',
+    price: 1690,
+    priceDisplay: '₹1,690',
+    usdDisplay: '~$20',
+    icon: Zap,
+    popular: true,
+    description: 'For freelancers hunting and closing clients daily.',
+    features: [
+      '2,000 leads saved',
+      '1,000 AI credits every month',
+      '50 daily WhatsApp outreach queue',
+      '100 automated emails a day (from your Gmail)',
+      'Unlimited branded proposals (your domain)',
+      '3 team seats included',
+      'Day 3 & Day 7 follow-up pipeline tracker',
+    ],
     cta: 'Get Pro',
   },
   {
-    id: 'agency', name: 'Agency', price: 49, icon: Building2,
-    description: 'For agencies with large lead lists.',
-    features: ['Unlimited leads', 'Unlimited custom niches', 'Advanced analytics', 'White-label CSV export', 'API access', 'Priority support'],
+    id: 'agency',
+    name: 'Agency',
+    price: 4290,
+    priceDisplay: '₹4,290',
+    usdDisplay: '~$52',
+    icon: Building2,
+    description: 'For digital agencies and multi-person sales teams.',
+    features: [
+      'Unlimited leads saved',
+      '5,000 AI credits every month',
+      '80 daily WhatsApp outreach queue',
+      '100 automated emails a day (from your Gmail)',
+      'Unlimited branded proposals',
+      '15 team seats included',
+      'Shared agency pipeline & team roles',
+    ],
     cta: 'Get Agency',
   },
 ]
@@ -249,27 +288,27 @@ const PLANS = [
 const FAQS = [
   {
     q: 'Do I need a Google API key?',
-    a: 'For Places search, yes — your own key, billed to you at Google’s rates. CSV import and manual paste work without one.',
+    a: 'For live Google Places search, yes — you can paste your own free key (Google gives every account 1,000 free searches a month). But you can also upload any CSV or Excel file of leads and use the entire audit, scoring, AI messaging, and proposal pipeline with zero keys required.',
   },
   {
-    q: 'What does a grid scan cost in API requests?',
-    a: 'More than a single search — each tile in the grid is its own paged request. Every scan reports exactly how many billable requests it used, so there’s never a surprise after the fact.',
+    q: 'What is included in the 7-day Pro trial?',
+    a: 'Every new account starts with 7 days of Pro access and 50 free AI message credits. You can store up to 2,000 leads, run unlimited website audits, write AI pitches, and send proposals completely free with no credit card required.',
   },
   {
-    q: 'Where do the leads actually come from?',
-    a: 'Google Places text search, a CSV you already have (Google Maps exports work), or manual paste. Nothing is scraped from a source that would put your account at risk.',
+    q: 'How does outreach work?',
+    a: '1-click WhatsApp opens your own WhatsApp Web or mobile app with the prospect’s number and personalized pitch pre-filled. 1-click Email opens Gmail with subject and tailored copy ready. Pro and Agency plans also support automated bulk email sending up to 100/day.',
   },
   {
-    q: 'Is my data shared between workspaces?',
-    a: 'No. Leads, credits, and outreach history are isolated per workspace — a team plan does not mean a shared pool with anyone else on it.',
+    q: 'What is the ROI for a freelancer on the Pro plan?',
+    a: 'LeadForge Pro is ₹1,690/month (~$20/mo). A standard 5-page freelance website in India sells for ₹17,500 – ₹25,000. Closing just one single web design client covers your entire LeadForge subscription for the whole year.',
   },
   {
-    q: 'Can I export what I find?',
-    a: 'CSV and JSON, with every field: contact info, score, findings, and generated messages. No plan strips the export.',
+    q: 'Can I export my leads and data?',
+    a: 'Yes, full CSV and JSON export with every field: contact info, score, website audit issues, and AI generated pitches.',
   },
   {
-    q: 'What happens at the free 200-lead limit?',
-    a: 'Everything you’ve found stays usable — filtering, messaging, export. New leads stop importing until you upgrade or clear space.',
+    q: 'What payment methods do you accept?',
+    a: 'We accept instant UPI QR transfer (Google Pay, PhonePe, Paytm, BHIM) and Cards/Netbanking via Razorpay.',
   },
 ]
 
@@ -632,7 +671,7 @@ function ScoreCalculator() {
 const STEP_MEDIA = [
   { src: '/screenshots/leads.png', position: 'object-[22%_50%]' },
   { src: '/screenshots/dashboard.png', position: 'object-[30%_50%]' },
-  { src: '/screenshots/dashboard.png', position: 'object-[100%_50%]' },
+  { src: '/screenshots/app_pricing_upgrade.png', position: 'object-[50%_50%]' },
 ]
 
 /* One dot per position the track can actually scroll to, not one per card.
@@ -790,7 +829,7 @@ export default function Landing() {
             </p>
             <div className="mt-11 flex flex-col items-center gap-3 sm:flex-row">
               <a href={REGISTER_URL} className="pill pill-solid-on-dark">
-                Start free — 200 leads
+                Start free — 7-day Pro trial
               </a>
               <a href="#product" className="pill pill-on-dark">
                 See the product
@@ -1070,11 +1109,11 @@ export default function Landing() {
             </Reveal>
 
             <div className="mt-16 grid gap-6 md:grid-cols-3">
-              {PLANS.map(({ id, name, price, popular, description, features, cta }, i) => (
+              {PLANS.map(({ id, name, price, priceDisplay, usdDisplay, popular, description, features, cta }, i) => (
                 <Reveal key={id} delay={i * 80} className="h-full">
                   <div
                     className={`flex h-full flex-col border bg-surface p-8 transition-colors duration-300 sm:p-10 ${
-                      popular ? 'border-gray-900' : 'border-gray-200 hover:border-gray-400'
+                      popular ? 'border-gray-900 shadow-sm' : 'border-gray-200 hover:border-gray-400'
                     }`}
                   >
                     <div className="flex items-baseline justify-between gap-4">
@@ -1082,13 +1121,18 @@ export default function Landing() {
                       {popular && <span className="eyebrow text-[11px]">Most popular</span>}
                     </div>
                     <p className="mt-2 text-sm text-gray-600">{description}</p>
-                    <p className="mt-10 flex items-baseline gap-1.5">
-                      <span className="text-6xl font-light tracking-[-0.03em] text-gray-900 tabular-nums">
-                        {price === 0 ? 'Free' : `$${price}`}
-                      </span>
-                      {price !== 0 && <span className="text-sm text-gray-500">/month</span>}
-                    </p>
-                    <ul className="mt-10 flex-1 space-y-3 border-t border-gray-200 pt-8">
+                    <div className="mt-8 flex flex-col">
+                      <p className="flex items-baseline gap-1.5">
+                        <span className="text-5xl sm:text-6xl font-light tracking-[-0.03em] text-gray-900 tabular-nums">
+                          {priceDisplay || (price === 0 ? 'Free' : `₹${price}`)}
+                        </span>
+                        {price !== 0 && <span className="text-sm text-gray-500">/month</span>}
+                      </p>
+                      {usdDisplay && price !== 0 && (
+                        <p className="mt-1 text-xs text-gray-500 font-medium">{usdDisplay} USD / month for international</p>
+                      )}
+                    </div>
+                    <ul className="mt-8 flex-1 space-y-3 border-t border-gray-200 pt-8">
                       {features.map((f) => (
                         <li key={f} className="flex items-start gap-3 text-[15px] text-gray-700">
                           <Check className="mt-0.5 h-4 w-4 shrink-0 text-gray-900" strokeWidth={1.5} aria-hidden="true" />
@@ -1103,6 +1147,34 @@ export default function Landing() {
                 </Reveal>
               ))}
             </div>
+
+            {/* In-app pricing & payment proof */}
+            <Reveal delay={200} className="mt-16 border border-gray-200 bg-surface p-6 sm:p-10">
+              <div className="grid gap-8 lg:grid-cols-12 lg:items-center">
+                <div className="lg:col-span-5">
+                  <span className="eyebrow">Zero Friction Checkout</span>
+                  <h3 className="mt-3 text-2xl sm:text-3xl font-light text-gray-900">
+                    Instant UPI QR & Card Activations
+                  </h3>
+                  <p className="mt-4 text-sm leading-relaxed text-gray-600">
+                    Pay instantly via any UPI app (Google Pay, PhonePe, Paytm) or card. No forced subscriptions or hidden cancellation hurdles. Top-up credits start at ₹490 and never expire while your plan is active.
+                  </p>
+                  <div className="mt-6 flex flex-wrap gap-2 text-xs text-gray-600">
+                    <span className="bg-gray-100 rounded px-2.5 py-1 font-medium">500 Credits: ₹490</span>
+                    <span className="bg-gray-100 rounded px-2.5 py-1 font-medium">2,000 Credits: ₹1,690</span>
+                    <span className="bg-gray-100 rounded px-2.5 py-1 font-medium">Web Audits: Free</span>
+                  </div>
+                </div>
+                <div className="lg:col-span-7 overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+                  <img
+                    src="/screenshots/app_compare_plans.png"
+                    alt="LeadForge plans comparison and in-app checkout"
+                    className="w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            </Reveal>
           </div>
         </section>
 
