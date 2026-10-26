@@ -741,7 +741,7 @@ function StepCarousel() {
             key={s.step}
             aria-roledescription="slide"
             aria-label={`${i + 1} of ${HOW_IT_WORKS.length}: ${s.title}`}
-            className="media-zoom relative aspect-[4/5] w-[85%] shrink-0 snap-start overflow-hidden bg-neutral-900 text-white sm:w-[62%] xl:w-[48%]"
+            className="media-zoom relative aspect-[4/5] w-[85%] shrink-0 snap-start overflow-hidden rounded-2xl bg-neutral-900 text-white sm:w-[62%] xl:w-[48%]"
           >
             <img
               src={STEP_MEDIA[i].src}
@@ -765,22 +765,41 @@ function StepCarousel() {
         ))}
       </div>
 
-      {pages > 1 && (
-        <div className="mt-8 flex justify-center gap-2.5">
-          {Array.from({ length: pages }, (_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => goTo(i)}
-              aria-label={`Go to position ${i + 1} of ${pages}`}
-              aria-current={index === i ? 'true' : undefined}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                index === i ? 'w-6 bg-gray-900' : 'w-2 bg-gray-300 hover:bg-gray-500'
-              }`}
-            />
-          ))}
-        </div>
-      )}
+      {/* Navigation: prev/next buttons + dots */}
+      <div className="mt-8 flex items-center justify-center gap-4">
+        <button
+          type="button"
+          onClick={() => goTo(Math.max(0, index - 1))}
+          aria-label="Previous step"
+          className="grid h-10 w-10 place-items-center rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-lg"
+        >
+          ←
+        </button>
+        {pages > 1 && (
+          <div className="flex gap-2.5">
+            {Array.from({ length: pages }, (_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => goTo(i)}
+                aria-label={`Go to position ${i + 1} of ${pages}`}
+                aria-current={index === i ? 'true' : undefined}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === i ? 'w-6 bg-gray-900' : 'w-2 bg-gray-300 hover:bg-gray-500'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => goTo(Math.min(pages - 1, index + 1))}
+          aria-label="Next step"
+          className="grid h-10 w-10 place-items-center rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-lg"
+        >
+          →
+        </button>
+      </div>
     </div>
   )
 }
@@ -851,12 +870,29 @@ const TOUR_SLIDES = [
 function ProductTourCarousel() {
   const [activeIdx, setActiveIdx] = useState(0)
   const current = TOUR_SLIDES[activeIdx]
+  const timerRef = useRef(null)
 
   const next = () => setActiveIdx((prev) => (prev + 1) % TOUR_SLIDES.length)
   const prev = () => setActiveIdx((prev) => (prev - 1 + TOUR_SLIDES.length) % TOUR_SLIDES.length)
 
+  // Auto-advance every 4 seconds; pause on hover
+  const startTimer = () => {
+    clearInterval(timerRef.current)
+    timerRef.current = setInterval(next, 4000)
+  }
+  const stopTimer = () => clearInterval(timerRef.current)
+
+  useEffect(() => {
+    startTimer()
+    return () => clearInterval(timerRef.current)
+  }, [activeIdx])
+
   return (
-    <div className="mt-12 sm:mt-16">
+    <div
+      className="mt-12 sm:mt-16 max-w-4xl mx-auto"
+      onMouseEnter={stopTimer}
+      onMouseLeave={startTimer}
+    >
       {/* Category Tabs */}
       <div className="flex flex-wrap items-center justify-center gap-2 mb-6 sm:mb-8">
         {TOUR_SLIDES.map((slide, i) => (
@@ -875,80 +911,61 @@ function ProductTourCarousel() {
         ))}
       </div>
 
-      {/* Main Browser Window Showcase */}
-      <div className="overflow-hidden rounded-xl border border-white/15 bg-[#0f1117] shadow-2xl">
-        {/* Browser Top Bar */}
-        <div className="flex items-center justify-between border-b border-white/10 bg-black/40 px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-red-500/80 inline-block" />
-            <span className="h-3 w-3 rounded-full bg-yellow-500/80 inline-block" />
-            <span className="h-3 w-3 rounded-full bg-green-500/80 inline-block" />
-          </div>
-          <div className="hidden sm:flex items-center gap-2 rounded-md bg-white/5 px-3 py-1 text-xs text-white/50 font-mono">
-            <span>https://</span>
-            <span className="text-white/80">{current.url}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={prev}
-              type="button"
-              aria-label="Previous screen"
-              className="grid h-7 w-7 place-items-center rounded bg-white/10 text-white hover:bg-white/20 transition-colors text-sm"
-            >
-              ←
-            </button>
-            <span className="text-xs text-white/60 font-mono px-1">
-              {activeIdx + 1} / {TOUR_SLIDES.length}
-            </span>
-            <button
-              onClick={next}
-              type="button"
-              aria-label="Next screen"
-              className="grid h-7 w-7 place-items-center rounded bg-white/10 text-white hover:bg-white/20 transition-colors text-sm"
-            >
-              →
-            </button>
-          </div>
-        </div>
-
-        {/* Screenshot Image with Clean Aspect Ratio */}
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-black/80 flex items-center justify-center">
+      {/* Screenshot with simple rounded card */}
+      <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0f1117] shadow-2xl">
+        {/* Image — compact, no browser chrome */}
+        <div className="relative aspect-[2/1] w-full overflow-hidden bg-black/80 flex items-center justify-center">
           <img
             key={current.src}
             src={current.src}
             alt={current.alt}
             className="w-full h-full object-contain transition-opacity duration-300"
           />
+          {/* Prev / Next overlay arrows */}
+          <button
+            onClick={prev}
+            type="button"
+            aria-label="Previous screen"
+            className="absolute left-3 top-1/2 -translate-y-1/2 grid h-9 w-9 place-items-center rounded-full bg-black/50 text-white backdrop-blur hover:bg-black/70 transition-colors text-lg"
+          >
+            ←
+          </button>
+          <button
+            onClick={next}
+            type="button"
+            aria-label="Next screen"
+            className="absolute right-3 top-1/2 -translate-y-1/2 grid h-9 w-9 place-items-center rounded-full bg-black/50 text-white backdrop-blur hover:bg-black/70 transition-colors text-lg"
+          >
+            →
+          </button>
         </div>
 
-        {/* Slide Caption Details */}
-        <div className="border-t border-white/10 bg-black/60 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Caption bar */}
+        <div className="border-t border-white/10 bg-black/60 px-5 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] uppercase tracking-wider font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 rounded px-2 py-0.5">
                 {current.category}
               </span>
-              <h4 className="text-base sm:text-lg font-medium text-white">{current.title}</h4>
+              <h4 className="text-sm sm:text-base font-medium text-white">{current.title}</h4>
             </div>
-            <p className="mt-1.5 text-xs sm:text-sm text-white/70 max-w-2xl leading-relaxed">
+            <p className="mt-1 text-xs text-white/60 max-w-xl leading-relaxed">
               {current.subtitle}
             </p>
           </div>
-          <div className="shrink-0 flex items-center gap-2">
-            <button
-              onClick={prev}
-              type="button"
-              className="px-3 py-1.5 text-xs text-white/80 border border-white/20 rounded hover:bg-white/10 transition-colors"
-            >
-              Previous
-            </button>
-            <button
-              onClick={next}
-              type="button"
-              className="px-3 py-1.5 text-xs bg-white text-black font-medium rounded hover:bg-white/90 transition-colors"
-            >
-              Next Screen →
-            </button>
+          {/* Dot indicators */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {TOUR_SLIDES.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveIdx(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`rounded-full transition-all duration-300 ${
+                  activeIdx === i ? 'h-2 w-5 bg-white' : 'h-2 w-2 bg-white/30 hover:bg-white/50'
+                }`}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -976,14 +993,6 @@ export default function Landing() {
             media - dimmed and softened until it is texture, since this is
             the one place on the page where the words should win. */}
         <section id="top" className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-black text-white">
-          <img
-            src="/screenshots/tour_dashboard_stats.png"
-            alt=""
-            aria-hidden="true"
-            width="1024"
-            height="516"
-            className="absolute inset-0 -z-10 h-full w-full scale-110 object-cover object-top opacity-30 blur-[3px]"
-          />
           <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-b from-black/85 via-black/60 to-black" />
 
           <div className="flex flex-1 flex-col items-center justify-center px-5 pb-16 pt-36 text-center sm:px-10">
