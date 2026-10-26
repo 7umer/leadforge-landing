@@ -1481,17 +1481,7 @@ export default function Landing() {
                     <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={1.5} aria-hidden="true" />
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="https://github.com/7umer/leadforge"
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="inline-flex items-center gap-2 text-white/60 transition-colors hover:text-white"
-                  >
-                    <Github className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
-                    Source on GitHub
-                  </a>
-                </li>
+
               </ul>
             </nav>
           </div>
