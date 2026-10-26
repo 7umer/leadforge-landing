@@ -669,9 +669,9 @@ function ScoreCalculator() {
    pixelated contact column and account email, so no card is built around
    a block of redaction. */
 const STEP_MEDIA = [
-  { src: '/screenshots/leads.png', position: 'object-[22%_50%]' },
-  { src: '/screenshots/dashboard.png', position: 'object-[30%_50%]' },
-  { src: '/screenshots/dashboard.png', position: 'object-[100%_50%]' },
+  { src: '/screenshots/tour_leads_search.png', position: 'object-[22%_50%]' },
+  { src: '/screenshots/tour_dashboard_opportunities.png', position: 'object-[30%_50%]' },
+  { src: '/screenshots/tour_dashboard_stats.png', position: 'object-[100%_50%]' },
 ]
 
 /* One dot per position the track can actually scroll to, not one per card.
@@ -747,8 +747,8 @@ function StepCarousel() {
               src={STEP_MEDIA[i].src}
               alt=""
               aria-hidden="true"
-              width="1917"
-              height="970"
+              width="1024"
+              height="516"
               loading="lazy"
               className={`absolute inset-0 h-full w-full object-cover opacity-60 ${STEP_MEDIA[i].position}`}
             />
@@ -977,11 +977,11 @@ export default function Landing() {
             the one place on the page where the words should win. */}
         <section id="top" className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-black text-white">
           <img
-            src="/screenshots/dashboard.png"
+            src="/screenshots/tour_dashboard_stats.png"
             alt=""
             aria-hidden="true"
-            width="1917"
-            height="970"
+            width="1024"
+            height="516"
             className="absolute inset-0 -z-10 h-full w-full scale-110 object-cover object-top opacity-30 blur-[3px]"
           />
           <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-b from-black/85 via-black/60 to-black" />
@@ -1200,11 +1200,11 @@ export default function Landing() {
             <Reveal delay={100} className="lg:col-span-7 lg:-mr-10">
               <div className="media-zoom overflow-hidden bg-gray-100">
                 <img
-                  src="/screenshots/dashboard.png"
-                  width="1917"
-                  height="970"
+                  src="/screenshots/tour_dashboard_opportunities.png"
+                  width="1024"
+                  height="516"
                   loading="lazy"
-                  alt="The LeadForge dashboard: total leads, usable leads, a lead-quality breakdown and the outreach pipeline."
+                  alt="LeadForge website opportunity breakdown: 128 no website, 37 broken sites, 30 social-only, 56 outdated — scored and ready for outreach."
                   className="block w-full"
                 />
               </div>
@@ -1324,6 +1324,30 @@ export default function Landing() {
                   <span className="bg-gray-100 rounded px-2.5 py-1 font-medium">Web Audits: Free</span>
                 </div>
               </div>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                <div className="overflow-hidden rounded-lg ring-1 ring-gray-200">
+                  <img
+                    src="/screenshots/tour_pricing_plans.png"
+                    width="1024"
+                    height="517"
+                    loading="lazy"
+                    alt="LeadForge upgrade modal showing Pro at ₹1,690/mo and Agency at ₹4,290/mo plans"
+                    className="block w-full"
+                  />
+                  <p className="bg-gray-50 px-3 py-2 text-xs text-gray-500">Plan selection & pricing — from the live app</p>
+                </div>
+                <div className="overflow-hidden rounded-lg ring-1 ring-gray-200">
+                  <img
+                    src="/screenshots/tour_pricing_checkout.png"
+                    width="1024"
+                    height="516"
+                    loading="lazy"
+                    alt="LeadForge plan comparison table and UPI QR checkout options"
+                    className="block w-full"
+                  />
+                  <p className="bg-gray-50 px-3 py-2 text-xs text-gray-500">Feature comparison & UPI QR payment</p>
+                </div>
+              </div>
             </Reveal>
           </div>
         </section>
@@ -1382,11 +1406,11 @@ export default function Landing() {
                 </div>
                 <div className="media-zoom relative min-h-[18rem] overflow-hidden lg:min-h-[34rem]">
                   <img
-                    src="/screenshots/dashboard.png"
+                    src="/screenshots/tour_leads_table.png"
                     alt=""
                     aria-hidden="true"
-                    width="1917"
-                    height="970"
+                    width="1024"
+                    height="516"
                     loading="lazy"
                     className="absolute inset-0 h-full w-full object-cover object-[100%_0%]"
                   />
