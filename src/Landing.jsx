@@ -671,7 +671,7 @@ function ScoreCalculator() {
 const STEP_MEDIA = [
   { src: '/screenshots/leads.png', position: 'object-[22%_50%]' },
   { src: '/screenshots/dashboard.png', position: 'object-[30%_50%]' },
-  { src: '/screenshots/app_pricing_upgrade.png', position: 'object-[50%_50%]' },
+  { src: '/screenshots/dashboard.png', position: 'object-[100%_50%]' },
 ]
 
 /* One dot per position the track can actually scroll to, not one per card.
@@ -785,6 +785,177 @@ function StepCarousel() {
   )
 }
 
+const TOUR_SLIDES = [
+  {
+    id: 'leads-search',
+    category: 'Leads & Search',
+    tab: '1. Lead Discovery',
+    title: 'Google Places Search & Grid Tiling',
+    subtitle: 'Search any trade in any city (e.g. "dental clinics in Hyderabad") with automated billable request tracking and category filters.',
+    src: '/screenshots/tour_leads_search.png',
+    alt: 'LeadForge Google Maps lead search with custom count and filters',
+    url: 'leadforge.com/app/leads/search',
+  },
+  {
+    id: 'leads-table',
+    category: 'Leads & Search',
+    tab: '2. Urgency Scoring',
+    title: 'Need-Based Opportunity Scoring (0–100)',
+    subtitle: 'Businesses scored by website urgency: 90+ for no website or broken mobile layouts, with 1-click WhatsApp, Email, and Proposal actions.',
+    src: '/screenshots/tour_leads_table.png',
+    alt: 'LeadForge leads table showing urgency scores and 1-click contact actions',
+    url: 'leadforge.com/app/leads/table',
+  },
+  {
+    id: 'dashboard-stats',
+    category: 'Dashboard & Metrics',
+    tab: '3. Pipeline Overview',
+    title: 'Workspace Health & Conversion Metrics',
+    subtitle: 'Real-time pipeline overview: total leads, real prospects needing sites, usable leads, and converted paying clients.',
+    src: '/screenshots/tour_dashboard_stats.png',
+    alt: 'LeadForge dashboard metrics and lead pipeline stats',
+    url: 'leadforge.com/app/dashboard',
+  },
+  {
+    id: 'dashboard-opportunities',
+    category: 'Dashboard & Metrics',
+    tab: '4. Opportunities',
+    title: 'Website Opportunity Breakdown',
+    subtitle: 'Instant categorization: 128 businesses with no website, 37 with broken sites, 30 social-only, and 56 outdated platforms ready for outreach.',
+    src: '/screenshots/tour_dashboard_opportunities.png',
+    alt: 'LeadForge website opportunity breakdown chart and lead quality metrics',
+    url: 'leadforge.com/app/dashboard/opportunities',
+  },
+  {
+    id: 'pricing-plans',
+    category: 'Plans & Pricing',
+    tab: '5. Plan Options',
+    title: 'Transparent Upgrade Options',
+    subtitle: 'Pro plan at ₹1,690/mo with 2,000 leads & 1,000 monthly credits. Agency at ₹4,290/mo for teams with 15 seats.',
+    src: '/screenshots/tour_pricing_plans.png',
+    alt: 'LeadForge upgrade modal with Pro and Agency subscription pricing',
+    url: 'leadforge.com/app/upgrade',
+  },
+  {
+    id: 'pricing-checkout',
+    category: 'Plans & Pricing',
+    tab: '6. UPI Activation',
+    title: 'Feature Comparison & Instant UPI Activation',
+    subtitle: 'Complete side-by-side feature comparison, clear credit usage terms, and zero-fee instant UPI QR payments.',
+    src: '/screenshots/tour_pricing_checkout.png',
+    alt: 'LeadForge plan comparison table and UPI checkout options',
+    url: 'leadforge.com/app/checkout',
+  },
+]
+
+function ProductTourCarousel() {
+  const [activeIdx, setActiveIdx] = useState(0)
+  const current = TOUR_SLIDES[activeIdx]
+
+  const next = () => setActiveIdx((prev) => (prev + 1) % TOUR_SLIDES.length)
+  const prev = () => setActiveIdx((prev) => (prev - 1 + TOUR_SLIDES.length) % TOUR_SLIDES.length)
+
+  return (
+    <div className="mt-12 sm:mt-16">
+      {/* Category Tabs */}
+      <div className="flex flex-wrap items-center justify-center gap-2 mb-6 sm:mb-8">
+        {TOUR_SLIDES.map((slide, i) => (
+          <button
+            key={slide.id}
+            onClick={() => setActiveIdx(i)}
+            type="button"
+            className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 ${
+              activeIdx === i
+                ? 'bg-white text-black shadow-md'
+                : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+            }`}
+          >
+            {slide.tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Main Browser Window Showcase */}
+      <div className="overflow-hidden rounded-xl border border-white/15 bg-[#0f1117] shadow-2xl">
+        {/* Browser Top Bar */}
+        <div className="flex items-center justify-between border-b border-white/10 bg-black/40 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-red-500/80 inline-block" />
+            <span className="h-3 w-3 rounded-full bg-yellow-500/80 inline-block" />
+            <span className="h-3 w-3 rounded-full bg-green-500/80 inline-block" />
+          </div>
+          <div className="hidden sm:flex items-center gap-2 rounded-md bg-white/5 px-3 py-1 text-xs text-white/50 font-mono">
+            <span>https://</span>
+            <span className="text-white/80">{current.url}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={prev}
+              type="button"
+              aria-label="Previous screen"
+              className="grid h-7 w-7 place-items-center rounded bg-white/10 text-white hover:bg-white/20 transition-colors text-sm"
+            >
+              ←
+            </button>
+            <span className="text-xs text-white/60 font-mono px-1">
+              {activeIdx + 1} / {TOUR_SLIDES.length}
+            </span>
+            <button
+              onClick={next}
+              type="button"
+              aria-label="Next screen"
+              className="grid h-7 w-7 place-items-center rounded bg-white/10 text-white hover:bg-white/20 transition-colors text-sm"
+            >
+              →
+            </button>
+          </div>
+        </div>
+
+        {/* Screenshot Image with Clean Aspect Ratio */}
+        <div className="relative aspect-[16/9] w-full overflow-hidden bg-black/80 flex items-center justify-center">
+          <img
+            key={current.src}
+            src={current.src}
+            alt={current.alt}
+            className="w-full h-full object-contain transition-opacity duration-300"
+          />
+        </div>
+
+        {/* Slide Caption Details */}
+        <div className="border-t border-white/10 bg-black/60 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] uppercase tracking-wider font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 rounded px-2 py-0.5">
+                {current.category}
+              </span>
+              <h4 className="text-base sm:text-lg font-medium text-white">{current.title}</h4>
+            </div>
+            <p className="mt-1.5 text-xs sm:text-sm text-white/70 max-w-2xl leading-relaxed">
+              {current.subtitle}
+            </p>
+          </div>
+          <div className="shrink-0 flex items-center gap-2">
+            <button
+              onClick={prev}
+              type="button"
+              className="px-3 py-1.5 text-xs text-white/80 border border-white/20 rounded hover:bg-white/10 transition-colors"
+            >
+              Previous
+            </button>
+            <button
+              onClick={next}
+              type="button"
+              className="px-3 py-1.5 text-xs bg-white text-black font-medium rounded hover:bg-white/90 transition-colors"
+            >
+              Next Screen →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const CONTAINER = 'mx-auto max-w-[88rem] px-5 sm:px-10'
 
 export default function Landing() {
@@ -853,31 +1024,20 @@ export default function Landing() {
         <section id="product" className="scroll-mt-20 bg-black pb-24 pt-10 text-white sm:pb-32">
           <div className={CONTAINER}>
             <Reveal className="mx-auto max-w-3xl text-center">
-              <p className="eyebrow text-white/80">The product</p>
+              <p className="eyebrow text-white/80">Interactive Product Tour</p>
               <h2 className="mt-4 text-4xl font-light leading-[1.05] tracking-[-0.02em] text-white sm:text-5xl lg:text-6xl">
                 Every lead, scored by how badly it needs you
               </h2>
+              <p className="mt-4 text-sm sm:text-base text-white/60">
+                Explore real views from the live application: from sourcing Google Maps leads to scoring urgency and 1-click outreach.
+              </p>
             </Reveal>
-            <Reveal delay={100} className="mt-14 sm:mt-20">
-              <figure>
-                <div className="media-zoom overflow-hidden ring-1 ring-white/10">
-                  <img
-                    src="/screenshots/leads.png"
-                    width="1917"
-                    height="970"
-                    alt="The LeadForge leads table: businesses with a quality tag, a score out of 100 and an outreach status, above filters for quality, niche, outreach status and site condition."
-                    className="block w-full"
-                  />
-                </div>
-                <figcaption className="mt-5 flex flex-col justify-between gap-2 text-sm text-white/50 sm:flex-row">
-                  <span>The leads table, from a live account.</span>
-                  <span>Contact details redacted.</span>
-                </figcaption>
-              </figure>
+            <Reveal delay={100}>
+              <ProductTourCarousel />
             </Reveal>
             <div className="mt-14 flex justify-center">
               <a href={REGISTER_URL} className="pill pill-on-dark">
-                Start free
+                Start free — 7-day Pro trial
               </a>
             </div>
           </div>
@@ -1150,28 +1310,18 @@ export default function Landing() {
 
             {/* In-app pricing & payment proof */}
             <Reveal delay={200} className="mt-16 border border-gray-200 bg-surface p-6 sm:p-10">
-              <div className="grid gap-8 lg:grid-cols-12 lg:items-center">
-                <div className="lg:col-span-5">
-                  <span className="eyebrow">Zero Friction Checkout</span>
-                  <h3 className="mt-3 text-2xl sm:text-3xl font-light text-gray-900">
-                    Instant UPI QR & Card Activations
-                  </h3>
-                  <p className="mt-4 text-sm leading-relaxed text-gray-600">
-                    Pay instantly via any UPI app (Google Pay, PhonePe, Paytm) or card. No forced subscriptions or hidden cancellation hurdles. Top-up credits start at ₹490 and never expire while your plan is active.
-                  </p>
-                  <div className="mt-6 flex flex-wrap gap-2 text-xs text-gray-600">
-                    <span className="bg-gray-100 rounded px-2.5 py-1 font-medium">500 Credits: ₹490</span>
-                    <span className="bg-gray-100 rounded px-2.5 py-1 font-medium">2,000 Credits: ₹1,690</span>
-                    <span className="bg-gray-100 rounded px-2.5 py-1 font-medium">Web Audits: Free</span>
-                  </div>
-                </div>
-                <div className="lg:col-span-7 overflow-hidden rounded-lg border border-gray-200 shadow-sm">
-                  <img
-                    src="/screenshots/app_compare_plans.png"
-                    alt="LeadForge plans comparison and in-app checkout"
-                    className="w-full object-cover"
-                    loading="lazy"
-                  />
+              <div className="max-w-2xl">
+                <span className="eyebrow">Zero Friction Checkout</span>
+                <h3 className="mt-3 text-2xl sm:text-3xl font-light text-gray-900">
+                  Instant UPI QR & Card Activations
+                </h3>
+                <p className="mt-4 text-sm leading-relaxed text-gray-600">
+                  Pay instantly via any UPI app (Google Pay, PhonePe, Paytm) or card. No forced subscriptions or hidden cancellation hurdles. Top-up credits start at ₹490 and never expire while your plan is active.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-2 text-xs text-gray-600">
+                  <span className="bg-gray-100 rounded px-2.5 py-1 font-medium">500 Credits: ₹490</span>
+                  <span className="bg-gray-100 rounded px-2.5 py-1 font-medium">2,000 Credits: ₹1,690</span>
+                  <span className="bg-gray-100 rounded px-2.5 py-1 font-medium">Web Audits: Free</span>
                 </div>
               </div>
             </Reveal>
